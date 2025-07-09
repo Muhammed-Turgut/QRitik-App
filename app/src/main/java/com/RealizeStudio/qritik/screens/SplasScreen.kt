@@ -71,7 +71,7 @@ fun SplashScreen(navController: NavController){
 
         RiveAnimationComposable()
         if (animateControl){
-            navController.navigate("MainScreen") {
+            navController.navigate("AppScreen") {
                 popUpTo("SplashScreen") { inclusive = true }
             }
         }

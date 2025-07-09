@@ -12,11 +12,7 @@ fun NavHostScreen(){
 
         composable("SplashScreen") { SplashScreen(navController) }
 
-        composable("MainScreen") { MainScreen(navController) }
-
-        composable("ScannerScreen"){ ScannerScreen(navController) }
-
-        composable ("SavesScreen") { SavesScreen(navController) }
+        composable ("AppScreen"){ AppScreen() }
 
     }
 }
