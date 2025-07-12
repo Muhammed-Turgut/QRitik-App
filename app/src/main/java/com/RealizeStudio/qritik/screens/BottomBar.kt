@@ -1,5 +1,6 @@
 package com.RealizeStudio.qritik.screens
 
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Icon
@@ -10,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -21,8 +23,7 @@ fun BottomBar(navController: NavController) {
     val items = listOf(
         BottomNavItem.Home,
         BottomNavItem.Scanne,
-        BottomNavItem.Create,
-        BottomNavItem.Save
+        BottomNavItem.Create
     )
     val currentRoute = currentRoute(navController)
 
@@ -52,6 +53,8 @@ fun BottomBar(navController: NavController) {
                     )
                 },
                 label = {
+
+
                     if (currentRoute == item.route){
                         Text(
                             text = item.title,
@@ -68,6 +71,8 @@ fun BottomBar(navController: NavController) {
                     selectedTextColor = Color.Black,
                     unselectedTextColor = Color.Gray
                 )
+                
+
 
             )
         }
@@ -90,7 +95,6 @@ sealed class BottomNavItem(
     object Home : BottomNavItem("home", R.drawable.home_selected, R.drawable.home_default, "Anasayfa")
     object Scanne : BottomNavItem("scanne", R.drawable.scanner_selected, R.drawable.scanner_default, "Tarat")
     object Create : BottomNavItem("create", R.drawable.create_selected, R.drawable.create_default, "Oluştru")
-    object Save : BottomNavItem("saves", R.drawable.save_selected, R.drawable.save_default, "Kayıtlar")
 
 }
 

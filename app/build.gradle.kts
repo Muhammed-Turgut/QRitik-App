@@ -63,9 +63,24 @@ dependencies {
     implementation ("app.rive:rive-android:4.1.0")
     implementation ("androidx.startup:startup-runtime:1.1.1")
 
+
+
     implementation ("com.google.accompanist:accompanist-systemuicontroller:0.34.0")
 
+    // CameraX
+    implementation("androidx.camera:camera-camera2:1.3.0")
+    implementation("androidx.camera:camera-lifecycle:1.3.0")
+    implementation("androidx.camera:camera-view:1.3.0")
+    implementation("androidx.camera:camera-extensions:1.3.0")
 
+    // ML Kit Barcode Scanning
+    implementation("com.google.mlkit:barcode-scanning:17.2.0")
+
+    // Bu da gerekli olabilir
+    implementation("androidx.camera:camera-core:1.3.0")
+
+// Lifecycle (ViewModel için)
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
 
 
 }

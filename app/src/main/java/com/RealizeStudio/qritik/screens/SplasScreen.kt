@@ -1,6 +1,8 @@
 package com.RealizeStudio.qritik.screens
 
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -20,62 +23,93 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import app.rive.runtime.kotlin.RiveAnimationView
 import com.RealizeStudio.qritik.ui.theme.Primary
 import com.RealizeStudio.qritik.R
+import com.RealizeStudio.qritik.viewModel.PermissionViewModel
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import kotlinx.coroutines.delay
 import java.nio.file.WatchEvent
 
 @Composable
-fun SplashScreen(navController: NavController){
+fun SplashScreen(
+    navController: NavController,
+    permissionViewModel: PermissionViewModel = viewModel()
+) {
+    val context = LocalContext.current
+    val permissionState by permissionViewModel.permissionsGranted.collectAsState()
+    var permissionRequested by remember { mutableStateOf(false) }
 
-    var animateControl by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) {
-        kotlinx.coroutines.delay(3000)
-        animateControl = true
+    println("Mevcut izin durumu: $permissionState")
 
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { result ->
+        println("İzin sonuçları: $result")
+        permissionRequested = true
+        permissionViewModel.updatePermissionStatus(result)
+
+        // İzin işlemi bittikten sonra direkt navigasyon yap
+        navController.navigate("AppScreen") {
+            popUpTo("SplashScreen") { inclusive = true }
+        }
     }
+
+    // İzin durumuna göre işlem yap
+    LaunchedEffect(permissionState, permissionRequested) {
+        when {
+            permissionState -> {
+                // İzin zaten verilmiş, direkt geç
+                println("İzin zaten verilmiş, navigasyon yapılıyor...")
+                delay(1000)
+                navController.navigate("AppScreen") {
+                    popUpTo("SplashScreen") { inclusive = true }
+                }
+            }
+            !permissionRequested -> {
+                // İzin henüz istenmemiş, iste
+                println("İzin isteniyor...")
+                launcher.launch(PermissionViewModel.REQUIRED_PERMISSIONS)
+            }
+        }
+    }
+
+    // UI renkleri
     val systemUiController = rememberSystemUiController()
-    val useDarkIcons = false // beyaz ikonlar için false
-    val color = Color(0xFF9818D6) // örnek bir mavi
-    val defaultColor = Color(0xFFFFFFFF)
+    val useDarkIcons = false
+    val color = Color(0xFF9818D6)
+    val defaultColor = Color.White
 
     SideEffect {
-        systemUiController.setStatusBarColor(
-            color = color,
-            darkIcons = useDarkIcons
-        )
-        systemUiController.setNavigationBarColor(
-            color = color,
-            darkIcons = useDarkIcons
-        )
+        systemUiController.setStatusBarColor(color, darkIcons = useDarkIcons)
+        systemUiController.setNavigationBarColor(color, darkIcons = useDarkIcons)
     }
+
     DisposableEffect(Unit) {
         onDispose {
             systemUiController.setStatusBarColor(defaultColor, darkIcons = true)
             systemUiController.setNavigationBarColor(defaultColor, darkIcons = true)
         }
     }
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .background(Primary),
+
+    // Splash arayüzü
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color),
         verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally) {
-
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         RiveAnimationComposable()
-        if (animateControl){
-            navController.navigate("AppScreen") {
-                popUpTo("SplashScreen") { inclusive = true }
-            }
-        }
-
     }
 }
 

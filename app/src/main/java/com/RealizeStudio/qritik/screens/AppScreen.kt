@@ -4,12 +4,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 
 @Composable
-fun AppScreen(){
+fun AppScreen(navControllerNoBottom: NavController){
 
     val navController = rememberNavController()
 
@@ -27,15 +28,12 @@ fun AppScreen(){
                 MainScreen()
             }
             composable(BottomNavItem.Scanne.route) {
-                ScannerScreen()
+                ScannerScreen(navControllerNoBottom)
             }
             composable(BottomNavItem.Create.route) {
                 CreateScreen()
             }
 
-            composable(BottomNavItem.Save.route ) {
-                SavesScreen()
-            }
         }
     }
 }
