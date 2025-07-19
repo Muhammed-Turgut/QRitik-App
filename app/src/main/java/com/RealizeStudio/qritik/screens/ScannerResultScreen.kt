@@ -1,5 +1,6 @@
 package com.RealizeStudio.qritik.screens
 
+import android.R.id.shareText
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -39,8 +40,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.RealizeStudio.qritik.R
+import com.RealizeStudio.qritik.viewModel.ScannerResultScreenViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,14 +52,15 @@ fun ScannerResultScreen(
     imagePath: String?=null,
     qrCodeData: String,
     codeType: String? = null,
-    dateTime: String? = null
+    dateTime: String? = null,
+    scannerResultScreenViewModel: ScannerResultScreenViewModel = viewModel()
 ) {
     val context = LocalContext.current
     val decodedData = Uri.decode(qrCodeData)
 
     android.util.Log.d("QRDebug", "Raw QR Data: '$qrCodeData'")
     android.util.Log.d("QRDebug", "Decoded QR Data: '$decodedData'")
-    android.util.Log.d("QRDebug", "Is WiFi QR: ${isWifiQR(decodedData)}")
+    android.util.Log.d("QRDebug", "Is WiFi QR: ${scannerResultScreenViewModel.isWifiQR(decodedData)}")
 
     Column(
         modifier = Modifier
@@ -169,7 +173,7 @@ fun ScannerResultScreen(
                         }
                 )
 
-                if (isUrl(decodedData)) {
+                if (scannerResultScreenViewModel.isUrl(decodedData)) {
                     Image(
                         painter = painterResource(R.drawable.open_icon),
                         contentDescription = null,
@@ -178,7 +182,7 @@ fun ScannerResultScreen(
                             .size(42.dp, 60.dp)
                             .clickable( indication = null, // Ripple'ı kapatır
                                 interactionSource = remember { MutableInteractionSource() }) {
-                                openUrl(context, decodedData)
+                                scannerResultScreenViewModel.openUrl(context, decodedData)
                             }
                     )
                 }
@@ -191,7 +195,7 @@ fun ScannerResultScreen(
                         .size(42.dp, 60.dp)
                         .clickable ( indication = null, // Ripple'ı kapatır
                             interactionSource = remember { MutableInteractionSource() }){
-                            copyToClipboard(context, decodedData)
+                            scannerResultScreenViewModel.copyToClipboard(context, decodedData)
                         }
                 )
 
@@ -203,11 +207,11 @@ fun ScannerResultScreen(
                         .padding(end = 10.dp)
                         .clickable( indication = null, // Ripple'ı kapatır
                             interactionSource = remember { MutableInteractionSource() }) {
-                            shareText(context, decodedData)
+                            scannerResultScreenViewModel.shareText(context, decodedData)
                         }
                 )
                 // WiFi QR kodu için bağlan butonu
-                if (isWifiQR(decodedData)) {
+                if (scannerResultScreenViewModel.isWifiQR(decodedData)) {
                     Image(
                         painter = painterResource(R.drawable.wifi_icon), // WiFi ikonu ekleyin
                         contentDescription = null,
@@ -216,7 +220,7 @@ fun ScannerResultScreen(
                             .clickable( indication = null,
                                 interactionSource = remember { MutableInteractionSource() }) {
                                 Toast.makeText(context, "WiFi butonu çalışıyor!", Toast.LENGTH_SHORT).show()
-                                connectToWifi(context, decodedData)
+                                scannerResultScreenViewModel.connectToWifi(context, decodedData)
                             }
                     )
                 }
@@ -255,78 +259,5 @@ fun ScannerResultScreen(
         }
     }
 }
-private fun isWifiQR(text: String): Boolean {
-    return true // Geçici test için - her zaman true döndür
-}
-
-private fun connectToWifi(context: Context, wifiData: String) {
-    try {
-        // DEBUG: Fonksiyonun çağrıldığını kontrol et
-        android.util.Log.d("WiFiDebug", "connectToWifi çağrıldı: '$wifiData'")
-        Toast.makeText(context, "WiFi bağlan butonuna basıldı!", Toast.LENGTH_SHORT).show()
-
-        if (wifiData.startsWith("WIFI")) {
-            // Standart WiFi QR format
-            android.util.Log.d("WiFiDebug", "Standart WiFi formatı tespit edildi")
-            val intent = Intent(android.provider.Settings.ACTION_WIFI_SETTINGS)
-            context.startActivity(intent)
-            Toast.makeText(context, "WiFi ayarlarına yönlendiriliyorsunuz", Toast.LENGTH_SHORT).show()
-        } else {
-            // Özel format: "SSID Password"
-            android.util.Log.d("WiFiDebug", "Özel WiFi formatı işleniyor")
-            val parts = wifiData.trim().split(" ")
-            android.util.Log.d("WiFiDebug", "Bölüm sayısı: ${parts.size}, Bölümler: $parts")
-
-            if (parts.size == 2) {
-                val ssid = parts[0]
-                val password = parts[1]
-
-                android.util.Log.d("WiFiDebug", "SSID: '$ssid', Password: '$password'")
-
-                // WiFi bilgilerini göster
-                Toast.makeText(context,
-                    "WiFi: $ssid\nŞifre: $password\nWiFi ayarlarına yönlendiriliyorsunuz",
-                    Toast.LENGTH_LONG).show()
-
-                // WiFi ayarlarını aç
-                val intent = Intent(android.provider.Settings.ACTION_WIFI_SETTINGS)
-                context.startActivity(intent)
-            } else {
-                android.util.Log.d("WiFiDebug", "Bölüm sayısı uygun değil: ${parts.size}")
-                Toast.makeText(context, "WiFi formatı tanınamadı: ${parts.size} bölüm", Toast.LENGTH_SHORT).show()
-            }
-        }
-    } catch (e: Exception) {
-        android.util.Log.e("WiFiDebug", "Hata: ${e.message}")
-        Toast.makeText(context, "WiFi ayarları açılamadı: ${e.message}", Toast.LENGTH_SHORT).show()
-    }
-}
 
 
-// Yardımcı fonksiyonlar
-private fun copyToClipboard(context: Context, text: String) {
-    val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-    val clip = ClipData.newPlainText("QR Code", text)
-    clipboardManager.setPrimaryClip(clip)
-}
-
-private fun shareText(context: Context, text: String) {
-    val intent = Intent(Intent.ACTION_SEND).apply {
-        type = "text/plain"
-        putExtra(Intent.EXTRA_TEXT, text)
-    }
-    context.startActivity(Intent.createChooser(intent, "Paylaş"))
-}
-
-private fun isUrl(text: String): Boolean {
-    return text.startsWith("http://") || text.startsWith("https://")
-}
-
-private fun openUrl(context: Context, url: String) {
-    try {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-        context.startActivity(intent)
-    } catch (e: Exception) {
-        Toast.makeText(context, "URL açılamadı", Toast.LENGTH_SHORT).show()
-    }
-}

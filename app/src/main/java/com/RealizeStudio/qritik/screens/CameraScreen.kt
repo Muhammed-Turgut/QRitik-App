@@ -1,9 +1,15 @@
 package com.RealizeStudio.qritik.screens
 
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.camera.core.Camera
+import androidx.camera.core.CameraSelector
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -12,40 +18,48 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.RealizeStudio.qritik.R
+import com.RealizeStudio.qritik.viewModel.CameraViewModel
 import com.RealizeStudio.qritik.viewModel.PermissionViewModel
-import android.content.Intent
-import android.net.Uri
-import android.provider.Settings
-
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CameraScreen(
     navController: NavController,
-    permissionViewModel: PermissionViewModel = viewModel()
+    permissionViewModel: PermissionViewModel = viewModel(),
+    cameraViewModel: CameraViewModel = viewModel()
 ) {
     val context = LocalContext.current
     val cameraPermissionGranted by permissionViewModel.cameraPermissionGranted.collectAsState()
     var showSettingsDialog by remember { mutableStateOf(false) }
+    var lensFacing by remember { mutableStateOf(CameraSelector.LENS_FACING_BACK) }
+
+    // Kamera ve flash durumu
+    var cameraInstance: Camera? by remember { mutableStateOf(null) }
+    var isFlashOn by remember { mutableStateOf(false) }
+
+    // QR kod tarama durumu
+    var isScanning by remember { mutableStateOf(true) }
 
     // İzin isteme launcher'ı
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         if (isGranted) {
-            // İzin verildi, ViewModel'i güncelle
             permissionViewModel.updateCameraPermission(true)
             Toast.makeText(context, "Kamera izni verildi", Toast.LENGTH_SHORT).show()
         } else {
-            // İzin reddedildi - ayarlar dialogunu göster
             showSettingsDialog = true
         }
     }
@@ -75,7 +89,6 @@ fun CameraScreen(
                 Button(
                     onClick = {
                         showSettingsDialog = false
-                        // Uygulama ayarlarını aç
                         val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                             data = Uri.fromParts("package", context.packageName, null)
                         }
@@ -99,86 +112,137 @@ fun CameraScreen(
     }
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black)
+        modifier = Modifier.fillMaxSize()
     ) {
-        // Üst toolbar
-        TopAppBar(
-            title = {
-                Text(
-                    text = "QR/Barkod Okuyucu",
-                    color = Color.White,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            },
-            navigationIcon = {
-                IconButton(
-                    onClick = { navController.popBackStack() }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Geri",
-                        tint = Color.White
-                    )
-                }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = Color.Black
-            )
-        )
-
-        // Kamera veya izin uyarısı
         if (cameraPermissionGranted) {
-            // Kamera kullanımı
-            CameraQRScanner(
-                onQRCodeDetected = { qrCode ->
-                    // QR kod tespit edildiğinde yapılacak işlemler
-                    Toast.makeText(context, "QR Kod: $qrCode", Toast.LENGTH_LONG).show()
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black)
+                    .padding(horizontal = 16.dp)
+            ) {
+                // Geri butonu
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Back",
+                    tint = Color.White,
+                    modifier = Modifier
+                        .padding(top = 44.dp)
+                        .align(Alignment.Start)
+                        .clickable { navController.navigate("AppScreen") }
+                        .size(32.dp)
+                )
 
-                    // Burada istediğiniz işlemi yapabilirsiniz:
-                    // - Veritabanına kaydetme
-                    // - Başka ekrana yönlendirme
-                    // - API çağrısı yapma vb.
-                },
-                onError = { error ->
-                    Toast.makeText(context, "Hata: $error", Toast.LENGTH_SHORT).show()
-                },
-                navController
-            )
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Kamera alanı
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .clip(RoundedCornerShape(16.dp))
+                ) {
+                    if (isScanning) {
+                        CameraQRScanner(
+                            onQRCodeDetected = { qrCode ->
+                                // QR kod bulunduğunda taramayı geçici olarak durdur
+                                isScanning = false
+                            },
+                            onError = { error ->
+                                Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
+                            },
+                            navController = navController,
+                            onCameraReady = { camera ->
+                                cameraInstance = camera
+                            }
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Alt butonlar
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 92.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Flash butonu
+                    IconButton(
+                        onClick = {
+                            cameraInstance?.let { camera ->
+                                try {
+                                    isFlashOn = !isFlashOn
+                                    cameraViewModel.toggleFlash(camera, isFlashOn)
+                                } catch (e: Exception) {
+                                    Toast.makeText(context, "Flash kontrolü başarısız", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }
+                    ) {
+                        Icon(
+                            painter = painterResource(
+                                id = if (isFlashOn) R.drawable.flash_on_icon else R.drawable.flash_off_icon
+                            ),
+                            contentDescription = if (isFlashOn) "Flash Kapat" else "Flash Aç",
+                            tint = Color.White,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+
+                    // Kamera değiştirme butonu
+                    IconButton(
+                        onClick = {
+                            // Kamera değiştirme özelliği için yeniden başlatma gerekebilir
+                            lensFacing = if (lensFacing == CameraSelector.LENS_FACING_BACK) {
+                                CameraSelector.LENS_FACING_FRONT
+                            } else {
+                                CameraSelector.LENS_FACING_BACK
+                            }
+                            // Kamerayı yeniden başlatmak için isScanning'i toggle et
+                            isScanning = false
+                            // Kısa bir gecikme sonrası tekrar başlat
+                            kotlinx.coroutines.MainScope().launch {
+                                kotlinx.coroutines.delay(100)
+                                isScanning = true
+                            }
+                        }
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.switch_the_camera_icon),
+                            contentDescription = "Kamera Değiştir",
+                            tint = Color.White,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+
+                    // Galeri butonu
+                    IconButton(
+                        onClick = {
+                            // Galeri özelliği eklenecek
+                            Toast.makeText(context, "Galeri özelliği yakında eklenecek", Toast.LENGTH_SHORT).show()
+                        }
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.galleriy),
+                            contentDescription = "Galeri Aç",
+                            tint = Color.White,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+                }
+            }
         } else {
-            // İzin uyarısı
+            // Kamera izni verilmemişse
             PermissionDeniedContent(
                 onRequestPermission = {
-                    // Gerçek izin isteme işlemi
                     permissionLauncher.launch(android.Manifest.permission.CAMERA)
                 },
                 onOpenSettings = {
-                    // Ayarlar dialogunu göster
                     showSettingsDialog = true
                 }
-            )
-        }
-
-        // Alt bilgi
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = Color.Black.copy(alpha = 0.8f)
-            ),
-            shape = RoundedCornerShape(12.dp)
-        ) {
-            Text(
-                text = "QR kod veya barkodu kare içine getirin",
-                color = Color.White,
-                fontSize = 14.sp,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .padding(16.dp)
-                    .fillMaxWidth()
             )
         }
     }

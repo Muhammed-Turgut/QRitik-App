@@ -16,6 +16,9 @@ fun NavHostScreen(){
         composable("SplashScreen") { SplashScreen(navController) }
 
         composable ("AppScreen"){ AppScreen(navController) }
+
+        composable("CameraScreen") { CameraScreen(navController) }
+
         composable(
             route = "ScannerResult/{qrCodeData}/{imagePath}/{codeType}/{dateTime}",
             arguments = listOf(

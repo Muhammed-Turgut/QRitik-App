@@ -1,4 +1,4 @@
-// CameraQRScanner.kt - QR kod resmi ile güncellenmiş versiyon
+// CameraQRScanner.kt - İyileştirilmiş versiyon
 package com.RealizeStudio.qritik.screens
 
 import android.content.Context
@@ -19,12 +19,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
@@ -32,6 +31,7 @@ import androidx.navigation.NavController
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
+import kotlinx.coroutines.delay
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
@@ -44,7 +44,8 @@ import java.util.concurrent.Executors
 fun CameraQRScanner(
     onQRCodeDetected: (String) -> Unit,
     onError: (String) -> Unit = {},
-    navController: NavController
+    navController: NavController,
+    onCameraReady: (Camera) -> Unit
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -56,31 +57,48 @@ fun CameraQRScanner(
     var scanDateTime by remember { mutableStateOf<String?>(null) }
     var isProcessing by remember { mutableStateOf(false) }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    // Kamera hazır olduğunda isProcessing'i sıfırla
+    LaunchedEffect(Unit) {
+        isProcessing = false
+    }
+
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .clip(RoundedCornerShape(16.dp))) {
+
         AndroidView(
             factory = { ctx ->
                 val previewView = PreviewView(ctx)
                 val executor = ContextCompat.getMainExecutor(ctx)
 
                 cameraProviderFuture.addListener({
-                    val cameraProvider = cameraProviderFuture.get()
-                    bindCamera(
-                        cameraProvider = cameraProvider,
-                        previewView = previewView,
-                        lifecycleOwner = lifecycleOwner,
-                        context = ctx,
-                        onQRCodeDetected = { code, imagePath, codeType, dateTime ->
-                            if (!isProcessing) {
-                                isProcessing = true
-                                detectedCode = code
-                                capturedImagePath = imagePath
-                                qrCodeType = codeType
-                                scanDateTime = dateTime
-                                onQRCodeDetected(code)
+                    try {
+                        val cameraProvider = cameraProviderFuture.get()
+                        val camera = bindCamera(
+                            cameraProvider = cameraProvider,
+                            previewView = previewView,
+                            lifecycleOwner = lifecycleOwner,
+                            context = ctx,
+                            onQRCodeDetected = { code, imagePath, codeType, dateTime ->
+                                if (!isProcessing) {
+                                    isProcessing = true
+                                    detectedCode = code
+                                    capturedImagePath = imagePath
+                                    qrCodeType = codeType
+                                    scanDateTime = dateTime
+                                    onQRCodeDetected(code)
+                                }
+                            },
+                            onError = { error ->
+                                isProcessing = false
+                                onError(error)
                             }
-                        },
-                        onError = onError
-                    )
+                        )
+                        onCameraReady(camera)
+                    } catch (e: Exception) {
+                        Log.e("CameraQRScanner", "Kamera başlatma hatası", e)
+                        onError("Kamera başlatılamadı: ${e.message}")
+                    }
                 }, executor)
 
                 previewView
@@ -88,24 +106,57 @@ fun CameraQRScanner(
             modifier = Modifier.fillMaxSize()
         )
 
-        // Tarama alanı göstergesi
         ScannerOverlay(
             modifier = Modifier.align(Alignment.Center)
         )
 
-        // Sonuç gösterimi ve yönlendirme
+        // İşlenme durumu göstergesi
+        if (isProcessing) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                contentAlignment = Alignment.BottomCenter
+            ) {
+                Card(
+                    modifier = Modifier.wrapContentSize(),
+                    colors = CardDefaults.cardColors(containerColor = Color.Black.copy(alpha = 0.7f))
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(16.dp),
+                            color = Color.White,
+                            strokeWidth = 2.dp
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "QR kod işleniyor...",
+                            color = Color.White,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
+            }
+        }
+
         detectedCode?.let { code ->
             LaunchedEffect(code) {
-                // QR kod verisini URL encode et
-                val encodedCode = Uri.encode(code)
-                // Resim yolunu URL encode et
-                val encodedImagePath = Uri.encode(capturedImagePath ?: "")
-                // QR kod türünü URL encode et
-                val encodedCodeType = Uri.encode(qrCodeType ?: "")
-                // Tarih ve saati URL encode et
-                val encodedDateTime = Uri.encode(scanDateTime ?: "")
-                // Veriyi navigation argument olarak aktar
-                navController.navigate("ScannerResult/$encodedCode/$encodedImagePath/$encodedCodeType/$encodedDateTime")
+                // Kısa bir gecikme ekleyerek UI'nın güncellenmesini sağla
+                delay(100)
+                try {
+                    val encodedCode = Uri.encode(code)
+                    val encodedImagePath = Uri.encode(capturedImagePath ?: "")
+                    val encodedCodeType = Uri.encode(qrCodeType ?: "")
+                    val encodedDateTime = Uri.encode(scanDateTime ?: "")
+                    navController.navigate("ScannerResult/$encodedCode/$encodedImagePath/$encodedCodeType/$encodedDateTime")
+                } catch (e: Exception) {
+                    Log.e("CameraQRScanner", "Navigasyon hatası", e)
+                    isProcessing = false
+                    onError("Navigasyon hatası: ${e.message}")
+                }
             }
         }
     }
@@ -114,19 +165,19 @@ fun CameraQRScanner(
 @Composable
 fun ScannerOverlay(modifier: Modifier = Modifier) {
     Box(
-        modifier = modifier
-            .size(250.dp)
+        modifier = modifier.size(250.dp)
     ) {
         // Köşe çizgileri
         val cornerLength = 40.dp
         val cornerWidth = 4.dp
+        val cornerColor = Color.White
 
         // Sol üst köşe
         Card(
             modifier = Modifier
                 .align(Alignment.TopStart)
                 .size(cornerLength, cornerWidth),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            colors = CardDefaults.cardColors(containerColor = cornerColor),
             shape = RoundedCornerShape(2.dp)
         ) {}
 
@@ -134,7 +185,7 @@ fun ScannerOverlay(modifier: Modifier = Modifier) {
             modifier = Modifier
                 .align(Alignment.TopStart)
                 .size(cornerWidth, cornerLength),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            colors = CardDefaults.cardColors(containerColor = cornerColor),
             shape = RoundedCornerShape(2.dp)
         ) {}
 
@@ -143,7 +194,7 @@ fun ScannerOverlay(modifier: Modifier = Modifier) {
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .size(cornerLength, cornerWidth),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            colors = CardDefaults.cardColors(containerColor = cornerColor),
             shape = RoundedCornerShape(2.dp)
         ) {}
 
@@ -151,7 +202,7 @@ fun ScannerOverlay(modifier: Modifier = Modifier) {
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .size(cornerWidth, cornerLength),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            colors = CardDefaults.cardColors(containerColor = cornerColor),
             shape = RoundedCornerShape(2.dp)
         ) {}
 
@@ -160,7 +211,7 @@ fun ScannerOverlay(modifier: Modifier = Modifier) {
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .size(cornerLength, cornerWidth),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            colors = CardDefaults.cardColors(containerColor = cornerColor),
             shape = RoundedCornerShape(2.dp)
         ) {}
 
@@ -168,7 +219,7 @@ fun ScannerOverlay(modifier: Modifier = Modifier) {
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .size(cornerWidth, cornerLength),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            colors = CardDefaults.cardColors(containerColor = cornerColor),
             shape = RoundedCornerShape(2.dp)
         ) {}
 
@@ -177,7 +228,7 @@ fun ScannerOverlay(modifier: Modifier = Modifier) {
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .size(cornerLength, cornerWidth),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            colors = CardDefaults.cardColors(containerColor = cornerColor),
             shape = RoundedCornerShape(2.dp)
         ) {}
 
@@ -185,7 +236,7 @@ fun ScannerOverlay(modifier: Modifier = Modifier) {
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .size(cornerWidth, cornerLength),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            colors = CardDefaults.cardColors(containerColor = cornerColor),
             shape = RoundedCornerShape(2.dp)
         ) {}
     }
@@ -198,7 +249,7 @@ private fun bindCamera(
     context: Context,
     onQRCodeDetected: (String, String?, String, String) -> Unit,
     onError: (String) -> Unit
-) {
+): Camera {
     try {
         // Preview
         val preview = Preview.Builder()
@@ -210,6 +261,7 @@ private fun bindCamera(
         // Image Analysis
         val imageAnalysis = ImageAnalysis.Builder()
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+            .setTargetResolution(android.util.Size(1280, 720))
             .build()
             .also {
                 it.setAnalyzer(
@@ -224,17 +276,17 @@ private fun bindCamera(
         // Mevcut bağlantıları kaldır
         cameraProvider.unbindAll()
 
-        // Kamera bağlantısını başlat
-        cameraProvider.bindToLifecycle(
+        // Kamera bağlantısını başlat ve Camera nesnesini döndür
+        return cameraProvider.bindToLifecycle(
             lifecycleOwner,
             cameraSelector,
             preview,
             imageAnalysis
         )
-
     } catch (exc: Exception) {
         Log.e("CameraX", "Kamera bağlantısı başarısız", exc)
         onError("Kamera başlatılamadı: ${exc.message}")
+        throw exc // Exception'ı yukarıya fırlat
     }
 }
 
@@ -245,10 +297,20 @@ class QRCodeAnalyzer(
 ) : ImageAnalysis.Analyzer {
 
     private val scanner = BarcodeScanning.getClient()
+    private var lastDetectionTime = 0L
+    private val detectionCooldown = 2000L // 2 saniye cooldown
 
     override fun analyze(imageProxy: ImageProxy) {
         val mediaImage = imageProxy.image
         if (mediaImage != null) {
+            val currentTime = System.currentTimeMillis()
+
+            // Çok sık tarama yapılmasını önle
+            if (currentTime - lastDetectionTime < detectionCooldown) {
+                imageProxy.close()
+                return
+            }
+
             val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
 
             scanner.process(image)
@@ -264,13 +326,16 @@ class QRCodeAnalyzer(
                             Barcode.TYPE_WIFI,
                             Barcode.TYPE_GEO -> {
                                 barcode.displayValue?.let { value ->
-                                    // QR kod bulunduğunda görüntüyü kaydet
-                                    val imagePath = saveImageToFile(imageProxy, context)
-                                    // QR kod türünü belirle
-                                    val codeType = getQRCodeType(barcode.valueType)
-                                    // Tarih ve saati al
-                                    val dateTime = getCurrentDateTime()
-                                    onQRCodeDetected(value, imagePath, codeType, dateTime)
+                                    if (value.isNotBlank()) {
+                                        lastDetectionTime = currentTime
+                                        // QR kod bulunduğunda görüntüyü kaydet
+                                        val imagePath = saveImageToFile(imageProxy, context)
+                                        // QR kod türünü belirle
+                                        val codeType = getQRCodeType(barcode.valueType)
+                                        // Tarih ve saati al
+                                        val dateTime = getCurrentDateTime()
+                                        onQRCodeDetected(value, imagePath, codeType, dateTime)
+                                    }
                                 }
                             }
                         }
@@ -291,9 +356,13 @@ class QRCodeAnalyzer(
     private fun saveImageToFile(imageProxy: ImageProxy, context: Context): String? {
         return try {
             val bitmap = imageProxyToBitmap(imageProxy)
-            val file = File(context.filesDir, "qr_image_${System.currentTimeMillis()}.jpg")
+            val imagesDir = File(context.filesDir, "qr_images")
+            if (!imagesDir.exists()) {
+                imagesDir.mkdirs()
+            }
+            val file = File(imagesDir, "qr_image_${System.currentTimeMillis()}.jpg")
             val fileOutputStream = FileOutputStream(file)
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 80, fileOutputStream)
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 85, fileOutputStream)
             fileOutputStream.flush()
             fileOutputStream.close()
             file.absolutePath
@@ -333,20 +402,20 @@ class QRCodeAnalyzer(
 
     private fun getQRCodeType(valueType: Int): String {
         return when (valueType) {
-            Barcode.TYPE_TEXT -> "TEXT"
+            Barcode.TYPE_TEXT -> "METIN"
             Barcode.TYPE_URL -> "URL"
-            Barcode.TYPE_CONTACT_INFO -> "CONTACT_INFO"
-            Barcode.TYPE_EMAIL -> "EMAIL"
-            Barcode.TYPE_PHONE -> "PHONE"
+            Barcode.TYPE_CONTACT_INFO -> "KONT_BLG"
+            Barcode.TYPE_EMAIL -> "E_POSTA"
+            Barcode.TYPE_PHONE -> "TELEFON"
             Barcode.TYPE_SMS -> "SMS"
             Barcode.TYPE_WIFI -> "WIFI"
-            Barcode.TYPE_GEO -> "GEO"
-            else -> "UNKNOWN"
+            Barcode.TYPE_GEO -> "KONUM"
+            else -> "BİLİNMEYEN"
         }
     }
 
     private fun getCurrentDateTime(): String {
-        val dateFormat = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault())
+        val dateFormat = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale("tr", "TR"))
         return dateFormat.format(Date())
     }
 }
