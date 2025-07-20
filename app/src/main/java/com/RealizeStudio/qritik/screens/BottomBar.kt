@@ -16,7 +16,7 @@ import com.RealizeStudio.qritik.R
 import com.RealizeStudio.qritik.ui.theme.Primary
 
 @Composable
-fun BottomBar(navController: NavController) {
+fun BottomBar(navController: NavController,navControllerApp: NavController) {
     val items = listOf(
         BottomNavItem.Home,
         BottomNavItem.Scanne,
@@ -30,9 +30,12 @@ fun BottomBar(navController: NavController) {
             NavigationBarItem(
                 selected = currentRoute == item.route,
                 onClick = {
-                    if (currentRoute != item.route) {
+                    if (item == BottomNavItem.Scanne) {
+                        navControllerApp.navigate("CameraScreen") {
+                            launchSingleTop = true
+                        }
+                    } else if (currentRoute != item.route) {
                         navController.navigate(item.route) {
-                            // Geriye dönüp yığılmayı önle
                             popUpTo(navController.graph.startDestinationId) {
                                 saveState = true
                             }
@@ -40,7 +43,8 @@ fun BottomBar(navController: NavController) {
                             restoreState = true
                         }
                     }
-                },
+                }
+                ,
                 icon = {
                     Icon(painterResource(
                         id = if (currentRoute == item.route) item.selectedIcon else item.unselectedIcon),

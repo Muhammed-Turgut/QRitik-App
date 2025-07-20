@@ -49,8 +49,8 @@ fun CameraScreen(
     var cameraInstance: Camera? by remember { mutableStateOf(null) }
     var isFlashOn by remember { mutableStateOf(false) }
 
-    // QR kod tarama durumu
-    var isScanning by remember { mutableStateOf(true) }
+    // QR kod tarama durumu - Key değişikliği ile yeniden başlatma
+    var scannerKey by remember { mutableStateOf(0) }
 
     // İzin isteme launcher'ı
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -135,28 +135,27 @@ fun CameraScreen(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Kamera alanı
+                // Kamera alanı - Key ile yeniden başlatma
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)
                         .clip(RoundedCornerShape(16.dp))
                 ) {
-                    if (isScanning) {
-                        CameraQRScanner(
-                            onQRCodeDetected = { qrCode ->
-                                // QR kod bulunduğunda taramayı geçici olarak durdur
-                                isScanning = false
-                            },
-                            onError = { error ->
-                                Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
-                            },
-                            navController = navController,
-                            onCameraReady = { camera ->
-                                cameraInstance = camera
-                            }
-                        )
-                    }
+                    CameraQRScanner(
+                        onQRCodeDetected = { qrCode ->
+                            // QR kod bulunduğunda herhangi bir ek işlem yapma
+                            // Navigasyon CameraQRScanner içinde yapılıyor
+                        },
+                        onError = { error ->
+                            Toast.makeText(context, error, Toast.LENGTH_LONG).show()
+                        },
+                        navController = navController,
+                        onCameraReady = { camera ->
+                            cameraInstance = camera
+                        },
+                        lensFacing = lensFacing
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -177,8 +176,10 @@ fun CameraScreen(
                                     isFlashOn = !isFlashOn
                                     cameraViewModel.toggleFlash(camera, isFlashOn)
                                 } catch (e: Exception) {
-                                    Toast.makeText(context, "Flash kontrolü başarısız", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "Flash kontrolü başarısız: ${e.message}", Toast.LENGTH_SHORT).show()
                                 }
+                            } ?: run {
+                                Toast.makeText(context, "Kamera henüz hazır değil", Toast.LENGTH_SHORT).show()
                             }
                         }
                     ) {
@@ -195,18 +196,26 @@ fun CameraScreen(
                     // Kamera değiştirme butonu
                     IconButton(
                         onClick = {
-                            // Kamera değiştirme özelliği için yeniden başlatma gerekebilir
-                            lensFacing = if (lensFacing == CameraSelector.LENS_FACING_BACK) {
-                                CameraSelector.LENS_FACING_FRONT
-                            } else {
-                                CameraSelector.LENS_FACING_BACK
-                            }
-                            // Kamerayı yeniden başlatmak için isScanning'i toggle et
-                            isScanning = false
-                            // Kısa bir gecikme sonrası tekrar başlat
-                            kotlinx.coroutines.MainScope().launch {
-                                kotlinx.coroutines.delay(100)
-                                isScanning = true
+                            try {
+                                // Lens facing değiştir
+                                lensFacing = if (lensFacing == CameraSelector.LENS_FACING_BACK) {
+                                    CameraSelector.LENS_FACING_FRONT
+                                } else {
+                                    CameraSelector.LENS_FACING_BACK
+                                }
+
+                                // Flash durumunu sıfırla
+                                isFlashOn = false
+                                cameraInstance = null
+
+                                // Scanner'ı yeniden başlat
+                                scannerKey++
+
+                                Toast.makeText(context,
+                                    if (lensFacing == CameraSelector.LENS_FACING_FRONT) "Ön kamera" else "Arka kamera",
+                                    Toast.LENGTH_SHORT).show()
+                            } catch (e: Exception) {
+                                Toast.makeText(context, "Kamera değiştirilemedi: ${e.message}", Toast.LENGTH_SHORT).show()
                             }
                         }
                     ) {

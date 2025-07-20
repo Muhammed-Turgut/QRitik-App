@@ -1,4 +1,4 @@
-// CameraQRScanner.kt - İyileştirilmiş versiyon
+// CameraQRScanner.kt - Düzeltilmiş versiyon
 package com.RealizeStudio.qritik.screens
 
 import android.content.Context
@@ -45,7 +45,8 @@ fun CameraQRScanner(
     onQRCodeDetected: (String) -> Unit,
     onError: (String) -> Unit = {},
     navController: NavController,
-    onCameraReady: (Camera) -> Unit
+    onCameraReady: (Camera) -> Unit,
+    lensFacing: Int = CameraSelector.LENS_FACING_BACK // Yeni parametre eklendi
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -56,10 +57,17 @@ fun CameraQRScanner(
     var qrCodeType by remember { mutableStateOf<String?>(null) }
     var scanDateTime by remember { mutableStateOf<String?>(null) }
     var isProcessing by remember { mutableStateOf(false) }
+    var cameraInitialized by remember { mutableStateOf(false) }
 
-    // Kamera hazır olduğunda isProcessing'i sıfırla
-    LaunchedEffect(Unit) {
+
+    // lensFacing değiştiğinde state'leri sıfırla
+    LaunchedEffect(lensFacing) {
+        detectedCode = null
+        capturedImagePath = null
+        qrCodeType = null
+        scanDateTime = null
         isProcessing = false
+        cameraInitialized = false
     }
 
     Box(modifier = Modifier
@@ -69,8 +77,11 @@ fun CameraQRScanner(
         AndroidView(
             factory = { ctx ->
                 val previewView = PreviewView(ctx)
-                val executor = ContextCompat.getMainExecutor(ctx)
-
+                previewView.scaleType = PreviewView.ScaleType.FILL_CENTER
+                previewView
+            },
+            update = { previewView ->
+                val executor = ContextCompat.getMainExecutor(context)
                 cameraProviderFuture.addListener({
                     try {
                         val cameraProvider = cameraProviderFuture.get()
@@ -78,9 +89,11 @@ fun CameraQRScanner(
                             cameraProvider = cameraProvider,
                             previewView = previewView,
                             lifecycleOwner = lifecycleOwner,
-                            context = ctx,
+                            context = context, // Bu satır eksikti
+                            lensFacing = lensFacing,
                             onQRCodeDetected = { code, imagePath, codeType, dateTime ->
                                 if (!isProcessing) {
+                                    Log.d("QRScanner", "QR kod bulundu: $code")
                                     isProcessing = true
                                     detectedCode = code
                                     capturedImagePath = imagePath
@@ -90,25 +103,39 @@ fun CameraQRScanner(
                                 }
                             },
                             onError = { error ->
+                                Log.e("QRScanner", "Hata: $error")
                                 isProcessing = false
                                 onError(error)
                             }
                         )
                         onCameraReady(camera)
+                        cameraInitialized = true
+                        Log.d("QRScanner", "Kamera başarıyla başlatıldı")
                     } catch (e: Exception) {
                         Log.e("CameraQRScanner", "Kamera başlatma hatası", e)
                         onError("Kamera başlatılamadı: ${e.message}")
                     }
                 }, executor)
-
-                previewView
             },
             modifier = Modifier.fillMaxSize()
         )
 
-        ScannerOverlay(
-            modifier = Modifier.align(Alignment.Center)
-        )
+        // Kamera başlatılmadıysa loading göster
+        if (!cameraInitialized) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(
+                    color = Color.White
+                )
+            }
+        } else {
+            ScannerOverlay(
+                modifier = Modifier.align(Alignment.Center)
+            )
+        }
 
         // İşlenme durumu göstergesi
         if (isProcessing) {
@@ -142,19 +169,34 @@ fun CameraQRScanner(
             }
         }
 
+        // QR kod bulunduğunda navigasyon
         detectedCode?.let { code ->
             LaunchedEffect(code) {
-                // Kısa bir gecikme ekleyerek UI'nın güncellenmesini sağla
-                delay(100)
+                Log.d("QRScanner", "Navigasyon başlatılıyor: $code")
                 try {
+                    // Daha uzun gecikme
+                    delay(500)
+
+                    // URL encode işlemi
                     val encodedCode = Uri.encode(code)
                     val encodedImagePath = Uri.encode(capturedImagePath ?: "")
-                    val encodedCodeType = Uri.encode(qrCodeType ?: "")
+                    val encodedCodeType = Uri.encode(qrCodeType ?: "BILINMEYEN")
                     val encodedDateTime = Uri.encode(scanDateTime ?: "")
-                    navController.navigate("ScannerResult/$encodedCode/$encodedImagePath/$encodedCodeType/$encodedDateTime")
+
+                    val route = "ScannerResult/$encodedCode/$encodedImagePath/$encodedCodeType/$encodedDateTime"
+                    Log.d("QRScanner", "Navigasyon rotası: $route")
+
+                    navController.navigate(route) {
+                        // Geri tuşuyla bu ekrana dönmeyi engelle
+                        popUpTo("CameraScreen") {
+                            inclusive = false
+                        }
+                    }
                 } catch (e: Exception) {
                     Log.e("CameraQRScanner", "Navigasyon hatası", e)
                     isProcessing = false
+                    // State'i sıfırla
+                    detectedCode = null
                     onError("Navigasyon hatası: ${e.message}")
                 }
             }
@@ -247,12 +289,14 @@ private fun bindCamera(
     previewView: PreviewView,
     lifecycleOwner: LifecycleOwner,
     context: Context,
+    lensFacing: Int = CameraSelector.LENS_FACING_BACK,
     onQRCodeDetected: (String, String?, String, String) -> Unit,
     onError: (String) -> Unit
 ): Camera {
     try {
         // Preview
         val preview = Preview.Builder()
+            .setTargetResolution(android.util.Size(1280, 720))
             .build()
             .also {
                 it.setSurfaceProvider(previewView.surfaceProvider)
@@ -271,7 +315,9 @@ private fun bindCamera(
             }
 
         // Kamera seçici
-        val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+        val cameraSelector = CameraSelector.Builder()
+            .requireLensFacing(lensFacing)
+            .build()
 
         // Mevcut bağlantıları kaldır
         cameraProvider.unbindAll()
@@ -286,7 +332,7 @@ private fun bindCamera(
     } catch (exc: Exception) {
         Log.e("CameraX", "Kamera bağlantısı başarısız", exc)
         onError("Kamera başlatılamadı: ${exc.message}")
-        throw exc // Exception'ı yukarıya fırlat
+        throw exc
     }
 }
 
@@ -298,9 +344,15 @@ class QRCodeAnalyzer(
 
     private val scanner = BarcodeScanning.getClient()
     private var lastDetectionTime = 0L
-    private val detectionCooldown = 2000L // 2 saniye cooldown
+    private val detectionCooldown = 1500L // 1.5 saniye cooldown
+    private var isProcessing = false
 
     override fun analyze(imageProxy: ImageProxy) {
+        if (isProcessing) {
+            imageProxy.close()
+            return
+        }
+
         val mediaImage = imageProxy.image
         if (mediaImage != null) {
             val currentTime = System.currentTimeMillis()
@@ -315,26 +367,25 @@ class QRCodeAnalyzer(
 
             scanner.process(image)
                 .addOnSuccessListener { barcodes ->
-                    for (barcode in barcodes) {
-                        when (barcode.valueType) {
-                            Barcode.TYPE_TEXT,
-                            Barcode.TYPE_URL,
-                            Barcode.TYPE_CONTACT_INFO,
-                            Barcode.TYPE_EMAIL,
-                            Barcode.TYPE_PHONE,
-                            Barcode.TYPE_SMS,
-                            Barcode.TYPE_WIFI,
-                            Barcode.TYPE_GEO -> {
+                    if (!isProcessing && barcodes.isNotEmpty()) {
+                        run loop@ {
+                            for (barcode in barcodes) {
                                 barcode.displayValue?.let { value ->
-                                    if (value.isNotBlank()) {
+                                    if (value.isNotBlank() && !isProcessing) {
+                                        isProcessing = true
                                         lastDetectionTime = currentTime
+
+                                        Log.d("QRCodeAnalyzer", "QR kod bulundu: $value")
+
                                         // QR kod bulunduğunda görüntüyü kaydet
                                         val imagePath = saveImageToFile(imageProxy, context)
                                         // QR kod türünü belirle
                                         val codeType = getQRCodeType(barcode.valueType)
                                         // Tarih ve saati al
                                         val dateTime = getCurrentDateTime()
+
                                         onQRCodeDetected(value, imagePath, codeType, dateTime)
+                                        return@loop
                                     }
                                 }
                             }
@@ -410,7 +461,7 @@ class QRCodeAnalyzer(
             Barcode.TYPE_SMS -> "SMS"
             Barcode.TYPE_WIFI -> "WIFI"
             Barcode.TYPE_GEO -> "KONUM"
-            else -> "BİLİNMEYEN"
+            else -> "BILINMEYEN"
         }
     }
 

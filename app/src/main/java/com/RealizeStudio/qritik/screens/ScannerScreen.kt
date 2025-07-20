@@ -1,17 +1,15 @@
 package com.RealizeStudio.qritik.screens
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavController
 
 @Composable
-fun ScannerScreen(navController: NavController){
-
-    navController.navigate("CameraScreen") {
-        popUpTo("ScannerScreen") {
-            inclusive = true // Önceki ekranı da geri yığıttan sil
+fun ScannerScreen(navController: NavController) {
+    /*LaunchedEffect(Unit) {
+        navController.navigate("CameraScreen") {
+            popUpTo("ScannerScreen") { inclusive = true }
+            launchSingleTop = true
         }
-        launchSingleTop = true // Aynı ekran birden fazla kez üst üste açılmaz
-    }
-
-
+    }*/
 }

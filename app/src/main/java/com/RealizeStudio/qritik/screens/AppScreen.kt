@@ -16,7 +16,7 @@ fun AppScreen(navControllerNoBottom: NavController){
 
     Scaffold(
         bottomBar = {
-            BottomBar(navController)
+            BottomBar(navController,navControllerNoBottom)
         }
     ) { innerPadding ->
         NavHost(
