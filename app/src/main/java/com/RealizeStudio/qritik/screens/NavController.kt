@@ -7,15 +7,16 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.RealizeStudio.qritik.viewModel.SaveViewModel
 
 @Composable
-fun NavHostScreen(){
+fun NavHostScreen(saveViewModel: SaveViewModel){
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = "SplashScreen") {
 
         composable("SplashScreen") { SplashScreen(navController) }
 
-        composable ("AppScreen"){ AppScreen(navController) }
+        composable ("AppScreen"){ AppScreen(navController,saveViewModel) }
 
         composable("CameraScreen") { CameraScreen(navController) }
 
@@ -52,7 +53,8 @@ fun NavHostScreen(){
                 qrCodeData = Uri.decode(qrCodeData),
                 imagePath = if (imagePath.isNotEmpty()) Uri.decode(imagePath) else null,
                 codeType = if (codeType.isNotEmpty()) Uri.decode(codeType) else null,
-                dateTime = if (dateTime.isNotEmpty()) Uri.decode(dateTime) else null
+                dateTime = if (dateTime.isNotEmpty()) Uri.decode(dateTime) else null,
+                saveViewModel = saveViewModel
             )
         }
 

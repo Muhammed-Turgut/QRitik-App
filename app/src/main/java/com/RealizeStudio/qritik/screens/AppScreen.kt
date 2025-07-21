@@ -8,9 +8,12 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.RealizeStudio.qritik.viewModel.SaveViewModel
 
 @Composable
-fun AppScreen(navControllerNoBottom: NavController){
+fun AppScreen(navControllerNoBottom: NavController,viewModel: SaveViewModel){
+
+    println("App screen calisti")
 
     val navController = rememberNavController()
 
@@ -25,11 +28,9 @@ fun AppScreen(navControllerNoBottom: NavController){
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(BottomNavItem.Home.route) {
-                MainScreen()
+                MainScreen(viewModel)
             }
-            composable(BottomNavItem.Scanne.route) {
-                ScannerScreen(navControllerNoBottom)
-            }
+
             composable(BottomNavItem.Create.route) {
                 CreateScreen()
             }

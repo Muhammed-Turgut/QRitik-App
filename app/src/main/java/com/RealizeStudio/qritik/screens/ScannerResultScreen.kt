@@ -13,6 +13,7 @@ import android.content.Intent
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -43,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.RealizeStudio.qritik.R
+import com.RealizeStudio.qritik.viewModel.SaveViewModel
 import com.RealizeStudio.qritik.viewModel.ScannerResultScreenViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -53,8 +55,11 @@ fun ScannerResultScreen(
     qrCodeData: String,
     codeType: String? = null,
     dateTime: String? = null,
-    scannerResultScreenViewModel: ScannerResultScreenViewModel = viewModel()
+    scannerResultScreenViewModel: ScannerResultScreenViewModel = viewModel(),
+    saveViewModel: SaveViewModel
 ) {
+
+    BackHandler {/*telefonun  geri tuşu ile önceki ekrana dömeyi engler.*/}
     val context = LocalContext.current
     val decodedData = Uri.decode(qrCodeData)
 
@@ -80,7 +85,12 @@ fun ScannerResultScreen(
             },
             navigationIcon = {
                 IconButton(
-                    onClick = { navController.popBackStack() }
+                    onClick = {navController.navigate("AppScreen") {
+                        popUpTo("ScannerResult") {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }}
                 ) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
@@ -98,7 +108,7 @@ fun ScannerResultScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(start = 16.dp, end = 16.dp, bottom = 8.dp),
+                .padding(start = 16.dp, end = 16.dp, bottom = 8.dp, top = 8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
@@ -169,7 +179,7 @@ fun ScannerResultScreen(
                         .size(42.dp, 60.dp)
                         .clickable( indication = null, // Ripple'ı kapatır
                             interactionSource = remember { MutableInteractionSource() }) {
-                            // Save işlemi
+                            saveViewModel.save("${codeType}","${qrCodeData}","${dateTime}")
                         }
                 )
 

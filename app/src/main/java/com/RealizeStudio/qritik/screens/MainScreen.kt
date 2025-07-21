@@ -3,6 +3,7 @@ package com.RealizeStudio.qritik.screens
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,13 +32,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.RealizeStudio.qritik.R
+import com.RealizeStudio.qritik.data.entity.QRsavesItem
 import com.RealizeStudio.qritik.ui.theme.Primary
 import com.RealizeStudio.qritik.ui.theme.Secondary
+import com.RealizeStudio.qritik.viewModel.SaveViewModel
 
 
 @Composable
-fun MainScreen(){
+fun MainScreen(viewModel: SaveViewModel){
 
     Column(modifier = Modifier
             .fillMaxSize()
@@ -52,13 +57,13 @@ fun MainScreen(){
             OpenGalleryButton(onClick = {
 
             })
-            SaveListem(list)
+          val saveList = viewModel.saveList.collectAsState()
+          SaveListem(saveList.value,viewModel)
 
     }
-
 }
 @Composable
-fun SaveListem(list: List<SaveListOf>){
+fun SaveListem(list: List<QRsavesItem>,viewModel: SaveViewModel){
 
 
     Column(modifier = Modifier
@@ -77,7 +82,9 @@ fun SaveListem(list: List<SaveListOf>){
         }
 
         if(list.isEmpty()){
-            Column(modifier = Modifier.fillMaxWidth(),
+            Column(modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 16.dp),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally){
 
@@ -86,7 +93,6 @@ fun SaveListem(list: List<SaveListOf>){
                     color = Color.Gray)
 
             }
-
         }
         else{
             LazyColumn(modifier = Modifier
@@ -94,7 +100,7 @@ fun SaveListem(list: List<SaveListOf>){
                 .padding(top = 8.dp)){
 
                 items(list) { it ->
-                    SaveRow(it)
+                    SaveRow(it,viewModel)
                 }
 
             }
@@ -103,32 +109,47 @@ fun SaveListem(list: List<SaveListOf>){
 }
 
 @Composable
-fun SaveRow(list: SaveListOf){
+fun SaveRow(list: QRsavesItem,viewModel: SaveViewModel){
     Row (modifier = Modifier
         .fillMaxWidth()
         .padding(top = 4.dp, bottom = 4.dp)){
 
-        Image(painter = painterResource(R.drawable.qrcode), contentDescription = "")
+        Image(painter = painterResource(
+            when(list.QR_Type){
+                "METIN" -> R.drawable.row_txt_icon
+                "URL" -> R.drawable.row_url_icon
+                "KONT_BLG" -> R.drawable.qrcode
+                "E_POSTA" -> R.drawable.row_email_icon
+                "TELEFON" -> R.drawable.row_phone_icon
+                "SMS" -> R.drawable.qrcode
+                "WIFI" -> R.drawable.row_wifi_icon
+                "KONUM" -> R.drawable.qrcode
+                else -> R.drawable.qrcode
+            }),
+            contentDescription = "")
+
+
         Column(modifier = Modifier.padding(start = 8.dp).weight(1f)) {
 
-            Text(text = "QR name",
+            Text(text = "${list.QR_Type}",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = Color.Black)
 
-            Text(text = "QR Link",
+            Text(text = "${list.QR_contents}",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Normal,
                 color = Color.Gray)
         }
 
         Column {
-            Image(modifier = Modifier.size(20.dp),
+            Image(modifier = Modifier
+                .size(20.dp)
+                .clickable(onClick = {
+                    //listeden kaydı sildi.
+                    viewModel.delete(list.id)
+                }),
                 painter = painterResource(R.drawable.delet_save),
-                contentDescription = "")
-
-            Image(modifier = Modifier.padding(top = 4.dp).size(18.dp),
-                painter = painterResource(R.drawable.update_save),
                 contentDescription = "")
         }
     }
@@ -270,13 +291,3 @@ fun MainScreenHeader(){
         )
     }
 }
-
-@Composable
-@Preview(showBackground = true)
-fun showe(){
-    MainScreen()
-}
-
-val list = listOf<SaveListOf>()
-
-data class SaveListOf(val listName:String)

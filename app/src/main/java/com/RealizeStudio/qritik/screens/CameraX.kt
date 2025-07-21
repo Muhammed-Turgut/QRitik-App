@@ -27,7 +27,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.RealizeStudio.qritik.viewModel.CameraViewModel
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
@@ -46,7 +49,9 @@ fun CameraQRScanner(
     onError: (String) -> Unit = {},
     navController: NavController,
     onCameraReady: (Camera) -> Unit,
-    lensFacing: Int = CameraSelector.LENS_FACING_BACK // Yeni parametre eklendi
+    lensFacing: Int = CameraSelector.LENS_FACING_BACK,
+    cameraViewModel: CameraViewModel = viewModel(),
+    imageUri: Uri?
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -85,7 +90,7 @@ fun CameraQRScanner(
                 cameraProviderFuture.addListener({
                     try {
                         val cameraProvider = cameraProviderFuture.get()
-                        val camera = bindCamera(
+                        val camera = cameraViewModel.bindCamera(
                             cameraProvider = cameraProvider,
                             previewView = previewView,
                             lifecycleOwner = lifecycleOwner,
@@ -284,57 +289,7 @@ fun ScannerOverlay(modifier: Modifier = Modifier) {
     }
 }
 
-private fun bindCamera(
-    cameraProvider: ProcessCameraProvider,
-    previewView: PreviewView,
-    lifecycleOwner: LifecycleOwner,
-    context: Context,
-    lensFacing: Int = CameraSelector.LENS_FACING_BACK,
-    onQRCodeDetected: (String, String?, String, String) -> Unit,
-    onError: (String) -> Unit
-): Camera {
-    try {
-        // Preview
-        val preview = Preview.Builder()
-            .setTargetResolution(android.util.Size(1280, 720))
-            .build()
-            .also {
-                it.setSurfaceProvider(previewView.surfaceProvider)
-            }
 
-        // Image Analysis
-        val imageAnalysis = ImageAnalysis.Builder()
-            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-            .setTargetResolution(android.util.Size(1280, 720))
-            .build()
-            .also {
-                it.setAnalyzer(
-                    Executors.newSingleThreadExecutor(),
-                    QRCodeAnalyzer(context, onQRCodeDetected, onError)
-                )
-            }
-
-        // Kamera seçici
-        val cameraSelector = CameraSelector.Builder()
-            .requireLensFacing(lensFacing)
-            .build()
-
-        // Mevcut bağlantıları kaldır
-        cameraProvider.unbindAll()
-
-        // Kamera bağlantısını başlat ve Camera nesnesini döndür
-        return cameraProvider.bindToLifecycle(
-            lifecycleOwner,
-            cameraSelector,
-            preview,
-            imageAnalysis
-        )
-    } catch (exc: Exception) {
-        Log.e("CameraX", "Kamera bağlantısı başarısız", exc)
-        onError("Kamera başlatılamadı: ${exc.message}")
-        throw exc
-    }
-}
 
 class QRCodeAnalyzer(
     private val context: Context,

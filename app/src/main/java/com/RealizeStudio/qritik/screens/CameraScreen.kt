@@ -1,13 +1,21 @@
 package com.RealizeStudio.qritik.screens
 
+import android.R.attr.bitmap
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.ImageDecoder
 import android.net.Uri
+import android.os.Build
+import android.provider.MediaStore
+import android.provider.MediaStore.Audio.Media
 import android.provider.Settings
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -20,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -40,6 +49,7 @@ fun CameraScreen(
     permissionViewModel: PermissionViewModel = viewModel(),
     cameraViewModel: CameraViewModel = viewModel()
 ) {
+    
     val context = LocalContext.current
     val cameraPermissionGranted by permissionViewModel.cameraPermissionGranted.collectAsState()
     var showSettingsDialog by remember { mutableStateOf(false) }
@@ -49,8 +59,33 @@ fun CameraScreen(
     var cameraInstance: Camera? by remember { mutableStateOf(null) }
     var isFlashOn by remember { mutableStateOf(false) }
 
-    // QR kod tarama durumu - Key değişikliği ile yeniden başlatma
-    var scannerKey by remember { mutableStateOf(0) }
+
+
+
+
+    val selectedImageUri = remember { mutableStateOf<Uri?>(null) }
+
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        selectedImageUri.value = uri
+        uri?.let {
+            cameraViewModel.analyzeImageFromUri(
+                context = context,
+                imageUri = it,
+                onQRCodeDetected = { qrData, imagePath, codeType, dateTime ->
+                    navController.navigate(
+                        "ScannerResult/${Uri.encode(qrData)}/${Uri.encode(imagePath)}/${Uri.encode(codeType)}/${Uri.encode(dateTime)}"
+                    )
+                },
+                onError = { error ->
+                    Toast.makeText(context, error, Toast.LENGTH_LONG).show()
+                }
+            )
+        }
+    }
+
+
 
     // İzin isteme launcher'ı
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -154,7 +189,8 @@ fun CameraScreen(
                         onCameraReady = { camera ->
                             cameraInstance = camera
                         },
-                        lensFacing = lensFacing
+                        lensFacing = lensFacing,
+                        imageUri = selectedImageUri.value
                     )
                 }
 
@@ -193,45 +229,14 @@ fun CameraScreen(
                         )
                     }
 
-                    // Kamera değiştirme butonu
-                    IconButton(
-                        onClick = {
-                            try {
-                                // Lens facing değiştir
-                                lensFacing = if (lensFacing == CameraSelector.LENS_FACING_BACK) {
-                                    CameraSelector.LENS_FACING_FRONT
-                                } else {
-                                    CameraSelector.LENS_FACING_BACK
-                                }
-
-                                // Flash durumunu sıfırla
-                                isFlashOn = false
-                                cameraInstance = null
-
-                                // Scanner'ı yeniden başlat
-                                scannerKey++
-
-                                Toast.makeText(context,
-                                    if (lensFacing == CameraSelector.LENS_FACING_FRONT) "Ön kamera" else "Arka kamera",
-                                    Toast.LENGTH_SHORT).show()
-                            } catch (e: Exception) {
-                                Toast.makeText(context, "Kamera değiştirilemedi: ${e.message}", Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.switch_the_camera_icon),
-                            contentDescription = "Kamera Değiştir",
-                            tint = Color.White,
-                            modifier = Modifier.size(32.dp)
-                        )
-                    }
 
                     // Galeri butonu
                     IconButton(
                         onClick = {
-                            // Galeri özelliği eklenecek
-                            Toast.makeText(context, "Galeri özelliği yakında eklenecek", Toast.LENGTH_SHORT).show()
+
+                            imagePickerLauncher.launch("image/*")
+
+
                         }
                     ) {
                         Icon(
@@ -256,6 +261,8 @@ fun CameraScreen(
         }
     }
 }
+
+
 
 @Composable
 fun PermissionDeniedContent(

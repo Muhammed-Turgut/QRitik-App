@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
+
 rootProject.name = "QRitik App"
 include(":app")
- 
