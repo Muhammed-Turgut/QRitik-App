@@ -32,7 +32,7 @@ fun AppScreen(navControllerNoBottom: NavController,viewModel: SaveViewModel){
             }
 
             composable(BottomNavItem.Create.route) {
-                CreateScreen()
+                CreateScreen(saveViewModel = viewModel)
             }
 
         }

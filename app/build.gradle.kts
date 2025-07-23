@@ -6,6 +6,7 @@ plugins {
     id("com.google.devtools.ksp")
 
 
+
 }
 
 android {
@@ -93,8 +94,14 @@ dependencies {
     // ML Kit Barcode Scanning
     implementation("com.google.mlkit:barcode-scanning:17.2.0")
 
+    //Barkoda dönüştürmek için
+    implementation ("com.google.zxing:core:3.5.3")
+
     // Bu da gerekli olabilir
     implementation("androidx.camera:camera-core:1.3.0")
+
+    // Admob için
+
 
     // Lifecycle (ViewModel için)
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")

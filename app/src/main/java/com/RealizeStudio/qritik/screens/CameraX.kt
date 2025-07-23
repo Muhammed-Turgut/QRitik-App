@@ -416,6 +416,7 @@ class QRCodeAnalyzer(
             Barcode.TYPE_SMS -> "SMS"
             Barcode.TYPE_WIFI -> "WIFI"
             Barcode.TYPE_GEO -> "KONUM"
+            Barcode.TYPE_PRODUCT -> "Ürün"
             else -> "BILINMEYEN"
         }
     }

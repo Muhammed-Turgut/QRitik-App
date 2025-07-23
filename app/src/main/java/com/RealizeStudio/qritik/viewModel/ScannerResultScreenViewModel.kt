@@ -4,9 +4,17 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
 import android.widget.Toast
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.MultiFormatWriter
+import com.google.zxing.common.BitMatrix
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class ScannerResultScreenViewModel: ViewModel() {
 
@@ -84,6 +92,45 @@ class ScannerResultScreenViewModel: ViewModel() {
             Toast.makeText(context, "WiFi ayarları açılamadı: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
+
+    //Yardımcı fonksiyon
+    fun generateQrCode(content: String, size: Int = 512): Bitmap {
+        val bitMatrix: BitMatrix = MultiFormatWriter().encode(
+            content,
+            BarcodeFormat.QR_CODE,
+            size,
+            size
+        )
+
+        val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.RGB_565)
+
+        for (x in 0 until size) {
+            for (y in 0 until size) {
+                bitmap.setPixel(x, y, if (bitMatrix.get(x, y)) android.graphics.Color.BLACK else android.graphics.Color.WHITE)
+            }
+        }
+
+        return bitmap
+    }
+
+    fun getCurrentDateTime(): String {
+        val dateFormat = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
+        return dateFormat.format(Date())
+    }
+
+    fun generateBarcode(content: String, format: BarcodeFormat, width: Int, height: Int): Bitmap {
+        val bitMatrix = MultiFormatWriter().encode(content, format, width, height)
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        for (x in 0 until width) {
+            for (y in 0 until height) {
+                bitmap.setPixel(x, y, if (bitMatrix[x, y]) android.graphics.Color.BLACK else android.graphics.Color.WHITE)
+
+            }
+        }
+        return bitmap
+    }
+
+
 
 
 }

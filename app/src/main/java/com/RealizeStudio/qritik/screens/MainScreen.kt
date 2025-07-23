@@ -1,23 +1,37 @@
 package com.RealizeStudio.qritik.screens
 
+import android.graphics.Bitmap
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -25,10 +39,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -38,30 +61,126 @@ import com.RealizeStudio.qritik.data.entity.QRsavesItem
 import com.RealizeStudio.qritik.ui.theme.Primary
 import com.RealizeStudio.qritik.ui.theme.Secondary
 import com.RealizeStudio.qritik.viewModel.SaveViewModel
+import com.RealizeStudio.qritik.viewModel.ScannerResultScreenViewModel
+import com.google.mlkit.vision.barcode.common.Barcode
+import com.google.zxing.BarcodeFormat
 
 
 @Composable
-fun MainScreen(viewModel: SaveViewModel){
+fun MainScreen(viewModel: SaveViewModel,saveViewModel: ScannerResultScreenViewModel = viewModel()) {
 
-    Column(modifier = Modifier
+    var textState = remember { mutableStateOf("") }
+    var text = remember { mutableStateOf("") }
+    var qrBitmap by remember { mutableStateOf<Bitmap?>(null) }
+    val context = LocalContext.current
+    Column(
+        modifier = Modifier
             .fillMaxSize()
             .background(Color.White),
-            horizontalAlignment = Alignment.CenterHorizontally) {
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
 
-            MainScreenHeader()
-            CustomTextField()
-            ConverterButton(onClick = {
+        Spacer(modifier = Modifier.padding(top = 16.dp))
+        MainScreenHeader()
+        BarcodCustomTextField(textState)
+        BarcodConverterButton(onClick = {
+           qrBitmap = saveViewModel.generateBarcode(content = textState.value, format = BarcodeFormat.CODE_128, width = 700, height = 300)
+        })
 
-            })
+        qrBitmap?.let {
+            Spacer(modifier = Modifier.padding(top = 32.dp))
 
-            OpenGalleryButton(onClick = {
+            Column(modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally){
 
-            })
-          val saveList = viewModel.saveList.collectAsState()
-          SaveListem(saveList.value,viewModel)
+                Image(bitmap = it.asImageBitmap(), contentDescription = "QR Code")
 
-    }
-}
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp), // opsiyonel iç boşluk
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Image(
+                        painter = painterResource(R.drawable.save_icon),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .padding(end = 10.dp)
+                            .size(42.dp, 60.dp)
+                            .clickable( indication = null, // Ripple'ı kapatır
+                                interactionSource = remember { MutableInteractionSource() }) {
+                                viewModel.save("Barcod","${text.value}","${saveViewModel.getCurrentDateTime()}")
+                            }
+                    )
+
+                    if (saveViewModel.isUrl(text.value)) {
+                        Image(
+                            painter = painterResource(R.drawable.open_icon),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .padding(end = 10.dp)
+                                .size(42.dp, 60.dp)
+                                .clickable( indication = null, // Ripple'ı kapatır
+                                    interactionSource = remember { MutableInteractionSource() }) {
+                                    saveViewModel.openUrl(context, text.value)
+                                }
+                        )
+                    }
+
+                    Image(
+                        painter = painterResource(R.drawable.copy_icon),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .padding(end = 10.dp)
+                            .size(42.dp, 60.dp)
+                            .clickable ( indication = null, // Ripple'ı kapatır
+                                interactionSource = remember { MutableInteractionSource() }){
+                                saveViewModel.copyToClipboard(context, text.value)
+                            }
+                    )
+
+                    Image(
+                        painter = painterResource(R.drawable.share_icon),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(42.dp, 60.dp)
+                            .padding(end = 10.dp)
+                            .clickable( indication = null, // Ripple'ı kapatır
+                                interactionSource = remember { MutableInteractionSource() }) {
+                                saveViewModel.shareText(context, text.value)
+                            }
+                    )
+                    // WiFi QR kodu için bağlan butonu
+                    if (saveViewModel.isWifiQR(text.value)) {
+                        Image(
+                            painter = painterResource(R.drawable.wifi_icon), // WiFi ikonu ekleyin
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(42.dp, 60.dp)
+                                .clickable( indication = null,
+                                    interactionSource = remember { MutableInteractionSource() }) {
+                                    Toast.makeText(context, "WiFi butonu çalışıyor!", Toast.LENGTH_SHORT).show()
+                                    saveViewModel.connectToWifi(context, text.value)
+                                }
+                        )
+                    }
+                }
+            }
+
+        }
+
+        Spacer(modifier = Modifier.padding(top = 12.dp))
+
+        val saveList = viewModel.saveList.collectAsState()
+        SaveListem(saveList.value, viewModel)
+    } // Column bitti
+
+} // Composable bitti
+
 @Composable
 fun SaveListem(list: List<QRsavesItem>,viewModel: SaveViewModel){
 
@@ -72,14 +191,22 @@ fun SaveListem(list: List<QRsavesItem>,viewModel: SaveViewModel){
 
         Row(modifier = Modifier
             .fillMaxWidth(),
-            horizontalArrangement = Arrangement.Absolute.Left){
+            horizontalArrangement = Arrangement.Start ,
+            verticalAlignment = Alignment.CenterVertically ){
 
-            Image(painter = painterResource(R.drawable.save_selected), contentDescription = "")
+            Image(painter = painterResource(R.drawable.save_selected),
+                contentDescription = "",
+                modifier = Modifier.size(20.dp))
+
             Text(text = "Kayıtlar"
                 ,fontSize = 20.sp,
                 fontWeight = FontWeight.Medium)
 
         }
+
+
+        Spacer(modifier = Modifier.padding(top = 4.dp))
+
 
         if(list.isEmpty()){
             Column(modifier = Modifier
@@ -129,7 +256,8 @@ fun SaveRow(list: QRsavesItem,viewModel: SaveViewModel){
             contentDescription = "")
 
 
-        Column(modifier = Modifier.padding(start = 8.dp).weight(1f)) {
+        Column(modifier = Modifier.padding(start = 8.dp).weight(1f),
+            verticalArrangement = Arrangement.Center) {
 
             Text(text = "${list.QR_Type}",
                 fontSize = 20.sp,
@@ -139,10 +267,11 @@ fun SaveRow(list: QRsavesItem,viewModel: SaveViewModel){
             Text(text = "${list.QR_contents}",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Normal,
-                color = Color.Gray)
+                color = Color.Gray,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis)
         }
 
-        Column {
             Image(modifier = Modifier
                 .size(20.dp)
                 .clickable(onClick = {
@@ -151,76 +280,21 @@ fun SaveRow(list: QRsavesItem,viewModel: SaveViewModel){
                 }),
                 painter = painterResource(R.drawable.delet_save),
                 contentDescription = "")
-        }
+
     }
 }
 
-@Composable
-fun OpenGalleryButton(onClick: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp) // Butonlar arası boşluk
-    ) {
-        androidx.compose.material3.Button(
-            onClick = onClick,
-            modifier = Modifier
-                .weight(1f),
-            shape = RoundedCornerShape(4.dp),
-            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                containerColor = Primary,
-                contentColor = Primary,
-                disabledContainerColor = Color.Transparent,
-                disabledContentColor = Color.Gray
-            )
-        ) {
-            Image(painter = painterResource(R.drawable.galleriy),
-                contentDescription = "")
-
-
-            Text(text = "Galleriyi aç",
-                modifier = Modifier.padding(start = 4.dp),
-                fontSize = 18.sp,
-                color = Color.White)
-        }
-
-        androidx.compose.material3.Button(
-            onClick = onClick,
-            modifier = Modifier
-                .weight(1f),
-            shape = RoundedCornerShape(4.dp),
-            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                containerColor = Secondary,
-                contentColor = Color.Transparent,
-                disabledContainerColor = Color.Transparent,
-                disabledContentColor = Color.Gray
-            )
-        ) {
-            Image(painter = painterResource(R.drawable.camera),
-                contentDescription = "")
-
-            Text(text = "Kameryı aç",
-                modifier = Modifier.padding(start = 4.dp),
-                fontSize = 18.sp,
-                color = Color.White)
-        }
-    }
-
-
-}
 
 @Composable
-fun CustomTextField() {
-    var textState by remember { mutableStateOf("") }
+fun BarcodCustomTextField(textState: MutableState<String>) {
 
     TextField(
-        value = textState,
-        onValueChange = { textState = it },
+        value = textState.value,
+        onValueChange = { textState.value = it },
         textStyle = TextStyle(color = Color.Black, fontSize = 18.sp),
         placeholder = {
             Text(
-                text = "Lütfen linki buraya girin...",
+                text = "Lütfen Ürün Kodunu Buraya girin",
                 color = Color.Gray,
                 fontSize = 18.sp
             )
@@ -247,8 +321,7 @@ fun CustomTextField() {
 }
 
 @Composable
-fun ConverterButton(onClick: () -> Unit) {
-
+fun BarcodConverterButton(onClick: () -> Unit) {
 
     androidx.compose.material3.Button(
         onClick = onClick,
@@ -268,15 +341,14 @@ fun ConverterButton(onClick: () -> Unit) {
             disabledContentColor = Color.Gray
         )
     ) {
-        Text(text = "QR Dönüştür", fontSize = 20.sp)
+        Text(text = "Barcoda Dönüştür", fontSize = 20.sp)
     }
 }
 
 @Composable
 fun MainScreenHeader(){
     Row(modifier = Modifier
-        .fillMaxWidth()
-        .padding(top = 16.dp),
+        .fillMaxWidth(),
         horizontalArrangement = Arrangement.Absolute.Center,
         verticalAlignment = Alignment.CenterVertically){
 

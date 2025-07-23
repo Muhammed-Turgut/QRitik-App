@@ -39,6 +39,10 @@
             tools:node="merge">
             <meta-data android:name="app.rive.runtime.kotlin.RiveInitializer"
                 android:value="androidx.startup" />
+
+            <meta-data
+                android:name="com.google.android.gms.ads.APPLICATION_ID"
+                android:value="ca-app-pub-6184842514914637~4841699844"/>
         </provider>
     </application>
 
