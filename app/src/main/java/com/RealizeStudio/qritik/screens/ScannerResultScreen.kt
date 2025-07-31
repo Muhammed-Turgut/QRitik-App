@@ -213,8 +213,8 @@ fun ScannerResultScreen(
                     painter = painterResource(R.drawable.share_icon),
                     contentDescription = null,
                     modifier = Modifier
-                        .size(42.dp, 60.dp)
                         .padding(end = 10.dp)
+                        .size(42.dp, 60.dp)
                         .clickable( indication = null, // Ripple'ı kapatır
                             interactionSource = remember { MutableInteractionSource() }) {
                             scannerResultScreenViewModel.shareText(context, decodedData)
@@ -229,7 +229,7 @@ fun ScannerResultScreen(
                             .size(42.dp, 60.dp)
                             .clickable( indication = null,
                                 interactionSource = remember { MutableInteractionSource() }) {
-                                Toast.makeText(context, "WiFi butonu çalışıyor!", Toast.LENGTH_SHORT).show()
+                                println("${decodedData}")
                                 scannerResultScreenViewModel.connectToWifi(context, decodedData)
                             }
                     )

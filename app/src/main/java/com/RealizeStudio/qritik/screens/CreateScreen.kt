@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.RealizeStudio.qritik.R
+import com.RealizeStudio.qritik.ui.ads.BannerAdView
 import com.RealizeStudio.qritik.ui.theme.Secondary
 import com.RealizeStudio.qritik.viewModel.SaveViewModel
 import com.RealizeStudio.qritik.viewModel.ScannerResultScreenViewModel
@@ -59,15 +60,16 @@ fun CreateScreen(viewModel: ScannerResultScreenViewModel = viewModel(),saveViewM
     val selectQRTypeString = remember { mutableStateOf("") }
 
     when(selectQRType.value){
-        0 ->  selectQRTypeString.value ="METIN"
-        1 -> selectQRTypeString.value = "URL"
-        2 -> selectQRTypeString.value = "E_POSTA"
-        3 -> selectQRTypeString.value = "TELEFON"
-        4 -> selectQRTypeString.value = "SMS"
-        5 -> selectQRTypeString.value = "WIFI"
-        6 -> selectQRTypeString.value = "Ürün"
+        0 ->  selectQRTypeString.value ="KONT_BLG"
+        1 -> selectQRTypeString.value = "Ürün"
+        2 -> selectQRTypeString.value = "URI"
+        3 -> selectQRTypeString.value = "METIN"
+        4 -> selectQRTypeString.value = "WIFI"
+        5 -> selectQRTypeString.value = "E_POSTA"
+        6 -> selectQRTypeString.value = "TELEFON"
         else -> selectQRTypeString.value =  "BILINMEYEN"
     }
+
 
     val selectedIndex = remember { mutableIntStateOf(-1) } // Hiçbiri seçilmemişse -1
 
@@ -126,10 +128,20 @@ fun CreateScreen(viewModel: ScannerResultScreenViewModel = viewModel(),saveViewM
         QRCustomTextField(text)
 
         QRConverterButton(onClick = {
-            qrBitmap = viewModel.generateQrCode(text.value)
+            when(selectQRType.value) {
+                0 -> qrBitmap = viewModel.generateQrCode(text.value) // KONT_BLG
+                1 -> qrBitmap = viewModel.generateQrCode(text.value) // Ürün
+                2 -> qrBitmap = viewModel.generateQrCode(text.value) // URL
+                3 -> qrBitmap = viewModel.generateQrCode(text.value) // TXT
+                4-> qrBitmap = viewModel.generateQrCode(text.value) // WIFI
+                5 -> qrBitmap = viewModel.generateQrCode("mailto:${text.value}") // E-POSTA
+                6 -> qrBitmap = viewModel.generateQrCode("tel:${text.value}") // TELEFON
+                else -> Toast.makeText(context, "Geçersiz QR tipi!", Toast.LENGTH_SHORT).show()
+            }
         })
 
         Spacer(modifier = Modifier.height(16.dp))
+        BannerAdView() //reklam alanı
 
         qrBitmap?.let {
             Column(modifier = Modifier.fillMaxWidth(),
@@ -189,8 +201,8 @@ fun CreateScreen(viewModel: ScannerResultScreenViewModel = viewModel(),saveViewM
                         painter = painterResource(R.drawable.share_icon),
                         contentDescription = null,
                         modifier = Modifier
-                            .size(42.dp, 60.dp)
                             .padding(end = 10.dp)
+                            .size(42.dp, 60.dp)
                             .clickable( indication = null, // Ripple'ı kapatır
                                 interactionSource = remember { MutableInteractionSource() }) {
                                 viewModel.shareText(context, text.value)

@@ -3,11 +3,15 @@ package com.RealizeStudio.qritik.screens
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
@@ -24,7 +28,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -45,16 +51,13 @@ fun SplashScreen(
     navController: NavController,
     permissionViewModel: PermissionViewModel = viewModel()
 ) {
-    val context = LocalContext.current
     val permissionState by permissionViewModel.permissionsGranted.collectAsState()
     var permissionRequested by remember { mutableStateOf(false) }
 
-    println("Mevcut izin durumu: $permissionState")
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { result ->
-        println("İzin sonuçları: $result")
         permissionRequested = true
         permissionViewModel.updatePermissionStatus(result)
 
@@ -68,9 +71,7 @@ fun SplashScreen(
     LaunchedEffect(permissionState, permissionRequested) {
         when {
             permissionState -> {
-                // İzin zaten verilmiş, direkt geç
-                println("İzin zaten verilmiş, navigasyon yapılıyor...")
-                delay(1000)
+                delay(3000)
                 navController.navigate("AppScreen") {
                     popUpTo("SplashScreen") { inclusive = true }
                 }
@@ -81,6 +82,8 @@ fun SplashScreen(
                 launcher.launch(PermissionViewModel.REQUIRED_PERMISSIONS)
             }
         }
+
+
     }
 
     // UI renkleri
@@ -105,12 +108,23 @@ fun SplashScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(color),
+            .background(color)
+            .padding(bottom = 16.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        RiveAnimationComposable()
+        //RiveAnimationComposable()
+
+        Image(painter = painterResource(R.drawable.logo), contentDescription = "")
+        Spacer(modifier = Modifier.height(12.dp))
+        Text(text = "QRitik QR kod ve Barkod tarayıcı",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(),
+            color= Color.White)
     }
+
 }
 
 
@@ -137,9 +151,3 @@ fun RiveAnimationComposable() {
 
 }
 
-@Preview(showBackground = true)
-@Composable
-fun goster(){
-    val navController = rememberNavController()
-    SplashScreen(navController)
-}

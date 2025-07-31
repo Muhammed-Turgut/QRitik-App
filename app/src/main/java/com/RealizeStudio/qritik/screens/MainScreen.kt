@@ -1,5 +1,6 @@
 package com.RealizeStudio.qritik.screens
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -58,21 +59,21 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.RealizeStudio.qritik.R
 import com.RealizeStudio.qritik.data.entity.QRsavesItem
-import com.RealizeStudio.qritik.ui.theme.Primary
+import com.RealizeStudio.qritik.ui.ads.BannerAdView
 import com.RealizeStudio.qritik.ui.theme.Secondary
 import com.RealizeStudio.qritik.viewModel.SaveViewModel
 import com.RealizeStudio.qritik.viewModel.ScannerResultScreenViewModel
-import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.zxing.BarcodeFormat
 
 
 @Composable
-fun MainScreen(viewModel: SaveViewModel,saveViewModel: ScannerResultScreenViewModel = viewModel()) {
+fun MainScreen(viewModel: SaveViewModel,scannerResultScreenViewModel: ScannerResultScreenViewModel = viewModel()) {
 
     var textState = remember { mutableStateOf("") }
     var text = remember { mutableStateOf("") }
-    var qrBitmap by remember { mutableStateOf<Bitmap?>(null) }
+    var barcodBitmap by remember { mutableStateOf<Bitmap?>(null) }
     val context = LocalContext.current
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -84,10 +85,11 @@ fun MainScreen(viewModel: SaveViewModel,saveViewModel: ScannerResultScreenViewMo
         MainScreenHeader()
         BarcodCustomTextField(textState)
         BarcodConverterButton(onClick = {
-           qrBitmap = saveViewModel.generateBarcode(content = textState.value, format = BarcodeFormat.CODE_128, width = 700, height = 300)
+            barcodBitmap = scannerResultScreenViewModel.generateBarcode(content = textState.value, format = BarcodeFormat.CODE_128, width = 700, height = 300)
         })
-
-        qrBitmap?.let {
+        Spacer(modifier = Modifier.height(12.dp))
+        BannerAdView()
+        barcodBitmap?.let {
             Spacer(modifier = Modifier.padding(top = 32.dp))
 
             Column(modifier = Modifier.fillMaxWidth(),
@@ -113,11 +115,11 @@ fun MainScreen(viewModel: SaveViewModel,saveViewModel: ScannerResultScreenViewMo
                             .size(42.dp, 60.dp)
                             .clickable( indication = null, // Ripple'ı kapatır
                                 interactionSource = remember { MutableInteractionSource() }) {
-                                viewModel.save("Barcod","${text.value}","${saveViewModel.getCurrentDateTime()}")
+                                viewModel.save("Barcod","${text.value}","${scannerResultScreenViewModel.getCurrentDateTime()}")
                             }
                     )
 
-                    if (saveViewModel.isUrl(text.value)) {
+                    if (scannerResultScreenViewModel.isUrl(text.value)) {
                         Image(
                             painter = painterResource(R.drawable.open_icon),
                             contentDescription = null,
@@ -126,7 +128,7 @@ fun MainScreen(viewModel: SaveViewModel,saveViewModel: ScannerResultScreenViewMo
                                 .size(42.dp, 60.dp)
                                 .clickable( indication = null, // Ripple'ı kapatır
                                     interactionSource = remember { MutableInteractionSource() }) {
-                                    saveViewModel.openUrl(context, text.value)
+                                    scannerResultScreenViewModel.openUrl(context, text.value)
                                 }
                         )
                     }
@@ -139,7 +141,7 @@ fun MainScreen(viewModel: SaveViewModel,saveViewModel: ScannerResultScreenViewMo
                             .size(42.dp, 60.dp)
                             .clickable ( indication = null, // Ripple'ı kapatır
                                 interactionSource = remember { MutableInteractionSource() }){
-                                saveViewModel.copyToClipboard(context, text.value)
+                                scannerResultScreenViewModel.copyToClipboard(context, text.value)
                             }
                     )
 
@@ -147,15 +149,15 @@ fun MainScreen(viewModel: SaveViewModel,saveViewModel: ScannerResultScreenViewMo
                         painter = painterResource(R.drawable.share_icon),
                         contentDescription = null,
                         modifier = Modifier
-                            .size(42.dp, 60.dp)
                             .padding(end = 10.dp)
+                            .size(42.dp, 60.dp)
                             .clickable( indication = null, // Ripple'ı kapatır
                                 interactionSource = remember { MutableInteractionSource() }) {
-                                saveViewModel.shareText(context, text.value)
+                                scannerResultScreenViewModel.shareText(context, text.value)
                             }
                     )
                     // WiFi QR kodu için bağlan butonu
-                    if (saveViewModel.isWifiQR(text.value)) {
+                    if (scannerResultScreenViewModel.isWifiQR(text.value)) {
                         Image(
                             painter = painterResource(R.drawable.wifi_icon), // WiFi ikonu ekleyin
                             contentDescription = null,
@@ -164,7 +166,7 @@ fun MainScreen(viewModel: SaveViewModel,saveViewModel: ScannerResultScreenViewMo
                                 .clickable( indication = null,
                                     interactionSource = remember { MutableInteractionSource() }) {
                                     Toast.makeText(context, "WiFi butonu çalışıyor!", Toast.LENGTH_SHORT).show()
-                                    saveViewModel.connectToWifi(context, text.value)
+                                    scannerResultScreenViewModel.connectToWifi(context, text.value)
                                 }
                         )
                     }
@@ -176,13 +178,13 @@ fun MainScreen(viewModel: SaveViewModel,saveViewModel: ScannerResultScreenViewMo
         Spacer(modifier = Modifier.padding(top = 12.dp))
 
         val saveList = viewModel.saveList.collectAsState()
-        SaveListem(saveList.value, viewModel)
+        SaveListem(saveList.value, viewModel,scannerResultScreenViewModel,context)
     } // Column bitti
 
 } // Composable bitti
 
 @Composable
-fun SaveListem(list: List<QRsavesItem>,viewModel: SaveViewModel){
+fun SaveListem(list: List<QRsavesItem>,viewModel: SaveViewModel, screenViewModel: ScannerResultScreenViewModel,context: Context){
 
 
     Column(modifier = Modifier
@@ -200,6 +202,7 @@ fun SaveListem(list: List<QRsavesItem>,viewModel: SaveViewModel){
 
             Text(text = "Kayıtlar"
                 ,fontSize = 20.sp,
+                color = Color.Black,
                 fontWeight = FontWeight.Medium)
 
         }
@@ -227,7 +230,7 @@ fun SaveListem(list: List<QRsavesItem>,viewModel: SaveViewModel){
                 .padding(top = 8.dp)){
 
                 items(list) { it ->
-                    SaveRow(it,viewModel)
+                    SaveRow(it,viewModel,screenViewModel,context)
                 }
 
             }
@@ -236,7 +239,7 @@ fun SaveListem(list: List<QRsavesItem>,viewModel: SaveViewModel){
 }
 
 @Composable
-fun SaveRow(list: QRsavesItem,viewModel: SaveViewModel){
+fun SaveRow(list: QRsavesItem,viewModel: SaveViewModel,screenViewModel: ScannerResultScreenViewModel, context: Context){
     Row (modifier = Modifier
         .fillMaxWidth()
         .padding(top = 4.dp, bottom = 4.dp)){
@@ -253,7 +256,20 @@ fun SaveRow(list: QRsavesItem,viewModel: SaveViewModel){
                 "KONUM" -> R.drawable.qrcode
                 else -> R.drawable.qrcode
             }),
-            contentDescription = "")
+            contentDescription = "",
+            modifier = Modifier.clickable(onClick = {
+                when(list.QR_Type){
+                    "METIN" -> screenViewModel.copyToClipboard(context,list.QR_contents.toString())
+                    "URL" ->  screenViewModel.openUrl(context,list.QR_contents.toString())
+                    "KONT_BLG" -> screenViewModel.copyToClipboard(context,list.QR_contents.toString())
+                    "E_POSTA" -> screenViewModel.copyToClipboard(context,list.QR_contents.toString())
+                    "TELEFON" ->  screenViewModel.openDialerWithNumber(context,list.QR_contents.toString())
+                    "SMS" ->   screenViewModel.copyToClipboard(context,list.QR_contents.toString())
+                    "WIFI" -> screenViewModel.connectToWifi(context,list.QR_contents.toString())
+                    "KONUM" -> screenViewModel.copyToClipboard(context,list.QR_contents.toString())
+                    else -> screenViewModel.copyToClipboard(context,list.QR_contents.toString())
+                }
+            }))
 
 
         Column(modifier = Modifier.padding(start = 8.dp).weight(1f),
@@ -338,7 +354,7 @@ fun BarcodConverterButton(onClick: () -> Unit) {
             containerColor = Color.Transparent, // ✔️ İç kısmı şeffaf
             contentColor = Secondary,         // ✔️ Yazı rengi çerçeveyle uyumlu
             disabledContainerColor = Color.Transparent,
-            disabledContentColor = Color.Gray
+            disabledContentColor = Color.Gray,
         )
     ) {
         Text(text = "Barcoda Dönüştür", fontSize = 20.sp)

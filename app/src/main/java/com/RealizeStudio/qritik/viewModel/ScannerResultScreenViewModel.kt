@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
+import android.provider.Settings
 import android.widget.Toast
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
@@ -46,52 +47,68 @@ class ScannerResultScreenViewModel: ViewModel() {
         }
     }
 
-     fun isWifiQR(text: String): Boolean {
-        return true // Geçici test için - her zaman true döndür
+    fun isWifiQR(text: String): Boolean {
+        return text.startsWith("WIFI:") &&
+                text.startsWith("WIFI:") &&
+                text.contains("S:") &&
+                (text.contains("T:WPA") || text.contains("T:WEP") || text.contains("T:nopass")) &&
+                text.contains("P:") &&
+                text.endsWith(";;")
     }
 
-     fun connectToWifi(context: Context, wifiData: String) {
+
+    fun connectToWifi(context: Context, wifiData: String) {
+        //Wifi ototmotik bağlanılmıyor sebebi android 10 ve sonrası sürümlerde kullanıcıdann zizin gereketirmesi.
+        //Bu yöntem ile kullanıcı wifi bağlanma ekrnaına yönlenidirliyor ve kullanıcıya şifreyi kendisi girmesi için izin veriliyor.
         try {
-            // DEBUG: Fonksiyonun çağrıldığını kontrol et
             android.util.Log.d("WiFiDebug", "connectToWifi çağrıldı: '$wifiData'")
             Toast.makeText(context, "WiFi bağlan butonuna basıldı!", Toast.LENGTH_SHORT).show()
 
-            if (wifiData.startsWith("WIFI")) {
-                // Standart WiFi QR format
-                android.util.Log.d("WiFiDebug", "Standart WiFi formatı tespit edildi")
-                val intent = Intent(android.provider.Settings.ACTION_WIFI_SETTINGS)
+            val trimmedData = wifiData.trim()
+            android.util.Log.d("WiFiDebug", "trimmedData: '$trimmedData'")
+
+            val parts = trimmedData.split("\\s+".toRegex())
+            android.util.Log.d("WiFiDebug", "parts.size: ${parts.size}, parts: $parts")
+
+            if (parts.size >= 2) {
+                val password = parts.last()
+                val ssid = parts.subList(0, parts.size - 1).joinToString(" ")
+
+                android.util.Log.d("WiFiDebug", "SSID: '$ssid', Şifre: '$password'")
+
+                Toast.makeText(
+                    context,
+                    "Ağ: $ssid\nŞifre: $password\nLütfen manuel bağlanın.",
+                    Toast.LENGTH_LONG
+                ).show()
+
+                val intent = Intent(Settings.ACTION_WIFI_SETTINGS)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 context.startActivity(intent)
-                Toast.makeText(context, "WiFi ayarlarına yönlendiriliyorsunuz", Toast.LENGTH_SHORT).show()
+            } else if (trimmedData.startsWith("WIFI:")) {
+                android.util.Log.d("WiFiDebug", "WIFI: formatı tespit edildi.")
+                val intent = Intent(Settings.ACTION_WIFI_SETTINGS)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                context.startActivity(intent)
+                Toast.makeText(context, "WiFi ayarlarına yönlendiriliyorsunuz.", Toast.LENGTH_SHORT).show()
             } else {
-                // Özel format: "SSID Password"
-                android.util.Log.d("WiFiDebug", "Özel WiFi formatı işleniyor")
-                val parts = wifiData.trim().split(" ")
-                android.util.Log.d("WiFiDebug", "Bölüm sayısı: ${parts.size}, Bölümler: $parts")
+                android.util.Log.d("WiFiDebug", "Tanınmayan WiFi formatı.")
+                Toast.makeText(context, "Tanınmayan WiFi formatı:\n$wifiData", Toast.LENGTH_LONG).show()
 
-                if (parts.size == 2) {
-                    val ssid = parts[0]
-                    val password = parts[1]
-
-                    android.util.Log.d("WiFiDebug", "SSID: '$ssid', Password: '$password'")
-
-                    // WiFi bilgilerini göster
-                    Toast.makeText(context,
-                        "WiFi: $ssid\nŞifre: $password\nWiFi ayarlarına yönlendiriliyorsunuz",
-                        Toast.LENGTH_LONG).show()
-
-                    // WiFi ayarlarını aç
-                    val intent = Intent(android.provider.Settings.ACTION_WIFI_SETTINGS)
-                    context.startActivity(intent)
-                } else {
-                    android.util.Log.d("WiFiDebug", "Bölüm sayısı uygun değil: ${parts.size}")
-                    Toast.makeText(context, "WiFi formatı tanınamadı: ${parts.size} bölüm", Toast.LENGTH_SHORT).show()
-                }
+                val fallbackIntent = Intent(Settings.ACTION_SETTINGS)
+                fallbackIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                context.startActivity(fallbackIntent)
             }
+
         } catch (e: Exception) {
             android.util.Log.e("WiFiDebug", "Hata: ${e.message}")
             Toast.makeText(context, "WiFi ayarları açılamadı: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
+
+
+
+
 
     //Yardımcı fonksiyon
     fun generateQrCode(content: String, size: Int = 512): Bitmap {
@@ -128,6 +145,19 @@ class ScannerResultScreenViewModel: ViewModel() {
             }
         }
         return bitmap
+    }
+
+    fun openDialerWithNumber(context: Context, phoneNumber: String){
+
+        try {
+            val intent = Intent(Intent.ACTION_DIAL)
+            intent.data = Uri.parse("tel:$phoneNumber")
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            context.startActivity(intent)
+            Toast.makeText(context,"Telefon ekranına yönlendiriliyorsunuz.", Toast.LENGTH_SHORT).show()
+        }catch (e: Exception){
+            Toast.makeText(context,"Hata oluştu.", Toast.LENGTH_SHORT).show()
+        }
     }
 
 

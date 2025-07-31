@@ -11,6 +11,8 @@ import com.RealizeStudio.qritik.room.QRsavesDatabase
 import com.RealizeStudio.qritik.ui.theme.QRitikAppTheme
 import com.RealizeStudio.qritik.viewModel.SaveViewModel
 import com.RealizeStudio.qritik.viewModel.SaveViewModelFactory
+import com.google.android.gms.ads.MobileAds
+
 
 
 class MainActivity : ComponentActivity() {
@@ -27,7 +29,9 @@ class MainActivity : ComponentActivity() {
         val saveViewModel = ViewModelProvider(this, viewModelFactory)[SaveViewModel::class.java]
 
         setContent {
+
             QRitikAppTheme {
+                MobileAds.initialize(this) {}
                 NavHostScreen(saveViewModel)
             }
         }
