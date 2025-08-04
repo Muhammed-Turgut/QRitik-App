@@ -9,6 +9,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -17,15 +18,20 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SmallTopAppBar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -40,10 +46,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.asImageBitmap
@@ -60,6 +68,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.RealizeStudio.qritik.R
 import com.RealizeStudio.qritik.data.entity.QRsavesItem
 import com.RealizeStudio.qritik.ui.ads.BannerAdView
+import com.RealizeStudio.qritik.ui.theme.Primary
 import com.RealizeStudio.qritik.ui.theme.Secondary
 import com.RealizeStudio.qritik.viewModel.SaveViewModel
 import com.RealizeStudio.qritik.viewModel.ScannerResultScreenViewModel
@@ -80,17 +89,13 @@ fun MainScreen(viewModel: SaveViewModel,scannerResultScreenViewModel: ScannerRes
             .background(Color.White),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
-        Spacer(modifier = Modifier.padding(top = 16.dp))
         MainScreenHeader()
-        BarcodCustomTextField(textState)
-        BarcodConverterButton(onClick = {
-            barcodBitmap = scannerResultScreenViewModel.generateBarcode(content = textState.value, format = BarcodeFormat.CODE_128, width = 700, height = 300)
-        })
+        Spacer(modifier = Modifier.height(12.dp))
+        SelectedListType()
         Spacer(modifier = Modifier.height(12.dp))
         BannerAdView()
         barcodBitmap?.let {
-            Spacer(modifier = Modifier.padding(top = 32.dp))
+            Spacer(modifier = Modifier.padding(top = 8.dp))
 
             Column(modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.Center,
@@ -362,20 +367,97 @@ fun BarcodConverterButton(onClick: () -> Unit) {
 }
 
 @Composable
-fun MainScreenHeader(){
-    Row(modifier = Modifier
-        .fillMaxWidth(),
-        horizontalArrangement = Arrangement.Absolute.Center,
-        verticalAlignment = Alignment.CenterVertically){
+fun SelectedListType(){
+    var selectedType by remember { mutableStateOf(true)}
 
-        Image(painter = painterResource(R.drawable.qritik_logo),
-            contentDescription = "null",
-            modifier = Modifier.size(44.dp))
+    Row (modifier = Modifier
+        .fillMaxWidth()
+        .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center){
 
-        Text(text = "QRitik",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFFFF5151)
-        )
+        Column(modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally) {
+
+            Text(text = "Tarananlar",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.clickable(onClick = {
+                    selectedType=true
+                }),
+                color = if(selectedType== true) Secondary else Color(0xFFA3A3A3)
+            )
+
+            if(selectedType== true){
+                Box(modifier = Modifier
+                    .height(5.dp)
+                    .width(130.dp)
+                    .clip(shape = CircleShape)
+                    .background(color = Primary))
+            }
+
+        }
+
+        Column(modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally)  {
+
+            Text(text = "Üretilenler",
+                modifier = Modifier.clickable(onClick = {
+                   selectedType=false
+                }),
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = if(selectedType== false) Secondary else Color(0xFFA3A3A3))
+
+            if(selectedType == false){
+                Box(modifier = Modifier
+                    .height(5.dp)
+                    .width(130.dp)
+                    .clip(shape = CircleShape)
+                    .background(color = Primary))
+            }
+
+        }
+
+
     }
+}
+
+@Composable
+fun MainScreenHeader() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(56.dp)
+            .shadow(4.dp, RectangleShape, ambientColor = Color.Gray, spotColor = Color.Gray)
+            .background(Color.White)
+    ) {
+        Row(
+            modifier = Modifier.align(Alignment.Center),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.qritik_logo),
+                contentDescription = "Logo",
+                tint = Color.Unspecified,
+                modifier = Modifier.size(48.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "QRitik",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFFFF5151)
+            )
+        }
+    }
+}
+
+
+@Preview(showBackground = true)
+@Composable
+fun show(){
+    SelectedListType()
 }

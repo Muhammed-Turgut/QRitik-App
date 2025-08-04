@@ -17,8 +17,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -31,7 +33,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -79,18 +83,9 @@ fun CreateScreen(viewModel: ScannerResultScreenViewModel = viewModel(),saveViewM
         .background(Color.White),
         horizontalAlignment = Alignment.CenterHorizontally) {
 
-        Text(text = "QR Oluştur",
-            fontWeight = FontWeight.Bold,
-            fontSize = 20.sp,
-            color = Secondary,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp, end = 16.dp, top = 16.dp),
-            textAlign = TextAlign.Start)
+        CreateScreenHeader()
 
-
-        Spacer(modifier = Modifier.padding(top = 16.dp))
-
+        Spacer(modifier = Modifier.height(16.dp))
 
         Row(
             modifier = Modifier
@@ -301,3 +296,26 @@ val icons = listOf(
     R.drawable.row_email_icon,
     R.drawable.row_phone_icon
 )
+
+@Composable
+fun CreateScreenHeader() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(56.dp)
+            .shadow(4.dp, RectangleShape, ambientColor = Color.Gray, spotColor = Color.Gray)
+            .background(Color.White)
+    ) {
+        Row(
+            modifier = Modifier.align(Alignment.Center),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Oluştur",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFFFF5151)
+            )
+        }
+    }
+}
