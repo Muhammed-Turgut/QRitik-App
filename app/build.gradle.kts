@@ -121,6 +121,9 @@ dependencies {
     kapt("com.google.dagger:hilt-compiler:2.48")
     implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
 
+     //Constrait layout
+    implementation ("androidx.constraintlayout:constraintlayout-compose:1.1.1")
+
 
 
 

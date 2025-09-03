@@ -8,7 +8,6 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.provider.Settings
 import android.widget.Toast
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.MultiFormatWriter
@@ -139,6 +138,7 @@ class ScannerResultScreenViewModel @Inject constructor(): ViewModel() {
     }
 
     fun generateBarcode(content: String, format: BarcodeFormat, width: Int, height: Int): Bitmap {
+
         val bitMatrix = MultiFormatWriter().encode(content, format, width, height)
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         for (x in 0 until width) {

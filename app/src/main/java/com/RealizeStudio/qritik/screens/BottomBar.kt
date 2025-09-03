@@ -4,16 +4,14 @@ package com.RealizeStudio.qritik.screens
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBarItemDefaults
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.RealizeStudio.qritik.R
-import com.RealizeStudio.qritik.ui.theme.Primary
+
 
 @Composable
 fun BottomBar(navController: NavController,navControllerApp: NavController) {
