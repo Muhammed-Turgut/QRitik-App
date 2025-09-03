@@ -41,6 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.RealizeStudio.qritik.R
@@ -55,8 +56,8 @@ fun ScannerResultScreen(
     qrCodeData: String,
     codeType: String? = null,
     dateTime: String? = null,
-    scannerResultScreenViewModel: ScannerResultScreenViewModel = viewModel(),
-    saveViewModel: SaveViewModel
+    scannerResultScreenViewModel: ScannerResultScreenViewModel = hiltViewModel(),
+    saveViewModel: SaveViewModel = hiltViewModel()
 ) {
 
     BackHandler {/*telefonun  geri tuşu ile önceki ekrana dömeyi engler.*/}

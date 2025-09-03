@@ -35,6 +35,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
@@ -49,7 +50,7 @@ import java.nio.file.WatchEvent
 @Composable
 fun SplashScreen(
     navController: NavController,
-    permissionViewModel: PermissionViewModel = viewModel()
+    permissionViewModel: PermissionViewModel = hiltViewModel()
 ) {
     val permissionState by permissionViewModel.permissionsGranted.collectAsState()
     var permissionRequested by remember { mutableStateOf(false) }
@@ -128,26 +129,5 @@ fun SplashScreen(
 }
 
 
-@Composable
-fun RiveAnimationComposable() {
 
-        Box(modifier = Modifier.size(240.dp)) {
-             AndroidView(
-                factory = { context ->
-                    RiveAnimationView(context).apply {
-                        setRiveResource(R.raw.splasscreenaimet)
-                        play()
-                    }
-                }
-            )
-        }
-
-        Text(text = "QRitik Kod Tarayıcı",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.White,
-            modifier = Modifier.padding(bottom = 100.dp))
-
-
-}
 

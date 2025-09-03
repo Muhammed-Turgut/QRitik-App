@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.RealizeStudio.qritik.data.repo.SaveRepository
 
+
 class SaveViewModelFactory(
     private val saveRepository: SaveRepository
 ) : ViewModelProvider.Factory {

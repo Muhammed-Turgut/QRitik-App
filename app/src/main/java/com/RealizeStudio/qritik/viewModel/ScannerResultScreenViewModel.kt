@@ -13,11 +13,14 @@ import androidx.lifecycle.ViewModel
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.MultiFormatWriter
 import com.google.zxing.common.BitMatrix
+import dagger.hilt.android.lifecycle.HiltViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import javax.inject.Inject
 
-class ScannerResultScreenViewModel: ViewModel() {
+@HiltViewModel
+class ScannerResultScreenViewModel @Inject constructor(): ViewModel() {
 
     // Yardımcı fonksiyonlar
      fun copyToClipboard(context: Context, text: String) {

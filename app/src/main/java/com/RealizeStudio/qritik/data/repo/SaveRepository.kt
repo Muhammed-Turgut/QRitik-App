@@ -3,8 +3,11 @@ package com.RealizeStudio.qritik.data.repo
 import com.RealizeStudio.qritik.data.dataSource.SaveDataSource
 import com.RealizeStudio.qritik.data.entity.QRsavesItem
 import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class SaveRepository(var saveDataSource: SaveDataSource) {
+@Singleton
+class SaveRepository @Inject constructor(var saveDataSource: SaveDataSource) {
 
     suspend fun save (qrType: String, qrContents: String, date: String){
         saveDataSource.save(qrType,qrContents,date)

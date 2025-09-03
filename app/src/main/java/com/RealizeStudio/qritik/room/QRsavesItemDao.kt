@@ -17,7 +17,6 @@ interface QRsavesItemDao {
     @Query("SELECT * FROM QRSaves WHERE id = :id") //this fon searcing
     suspend fun getItemById(id: Int): QRsavesItem?
 
-
     @Insert
     suspend fun insert(item: QRsavesItem) // veri eklemek için kullandığımız fonksiyon
 

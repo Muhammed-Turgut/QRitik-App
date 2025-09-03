@@ -5,13 +5,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.RealizeStudio.qritik.data.entity.QRsavesItem
 import com.RealizeStudio.qritik.data.repo.SaveRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import javax.inject.Inject
 
-
-class SaveViewModel  ( val saveRepository: SaveRepository): ViewModel(){
+@HiltViewModel
+class SaveViewModel @Inject  constructor( val saveRepository: SaveRepository): ViewModel(){
 
 
     private val _saveList = MutableStateFlow<List<QRsavesItem>>(emptyList())

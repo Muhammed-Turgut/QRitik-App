@@ -1,12 +1,11 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    //alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.compose)  // Uncomment this line
 
     id("com.google.devtools.ksp")
-
-
-
+    id("kotlin-kapt")
+    id("dagger.hilt.android.plugin")
 }
 
 android {
@@ -18,7 +17,7 @@ android {
         minSdk = 27
         targetSdk = 35
         versionCode = 2
-        versionName = "1.1"
+        versionName = "1.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -36,25 +35,18 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "11"
     }
     buildFeatures {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
+        kotlinCompilerExtensionVersion = "1.5.15"  // Add this block
     }
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
-    }
-
-
 }
 
 dependencies {
@@ -108,7 +100,7 @@ dependencies {
 
     // Lifecycle (ViewModel için)
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2") // EKLE
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
 
     val roomVersion = "2.6.1"
 
@@ -120,6 +112,15 @@ dependencies {
 
     //SpalsScreen özelleştire bilmek için
     implementation ("androidx.core:core-splashscreen:1.0.1")
+
+    //Geçiş animasyonları için
+    implementation ("com.google.accompanist:accompanist-navigation-animation:0.32.0")
+
+    //hillt
+    implementation("com.google.dagger:hilt-android:2.48")
+    kapt("com.google.dagger:hilt-compiler:2.48")
+    implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
+
 
 
 

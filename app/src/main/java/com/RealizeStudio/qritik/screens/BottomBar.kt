@@ -54,15 +54,6 @@ fun BottomBar(navController: NavController,navControllerApp: NavController) {
                     )
                 },
                 label = {
-
-
-                    if (currentRoute == item.route){
-                        Text(
-                            text = item.title,
-                            fontSize = 10.sp,
-                            color = Primary // veya istediğin başka renk
-                        )
-                    }
                 },
                 alwaysShowLabel = true,
                 colors = NavigationBarItemDefaults.colors(

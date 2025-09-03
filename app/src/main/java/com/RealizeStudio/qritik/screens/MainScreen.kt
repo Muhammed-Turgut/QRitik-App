@@ -64,6 +64,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.RealizeStudio.qritik.R
 import com.RealizeStudio.qritik.data.entity.QRsavesItem
@@ -76,11 +77,10 @@ import com.google.zxing.BarcodeFormat
 
 
 @Composable
-fun MainScreen(viewModel: SaveViewModel,scannerResultScreenViewModel: ScannerResultScreenViewModel = viewModel()) {
+fun MainScreen(viewModel: SaveViewModel = hiltViewModel(),
+               scannerResultScreenViewModel: ScannerResultScreenViewModel = hiltViewModel()) {
 
-    var textState = remember { mutableStateOf("") }
-    var text = remember { mutableStateOf("") }
-    var barcodBitmap by remember { mutableStateOf<Bitmap?>(null) }
+
     val context = LocalContext.current
 
     Column(
@@ -94,91 +94,6 @@ fun MainScreen(viewModel: SaveViewModel,scannerResultScreenViewModel: ScannerRes
         SelectedListType()
         Spacer(modifier = Modifier.height(12.dp))
         BannerAdView()
-        barcodBitmap?.let {
-            Spacer(modifier = Modifier.padding(top = 8.dp))
-
-            Column(modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally){
-
-                Image(bitmap = it.asImageBitmap(), contentDescription = "QR Code")
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp), // opsiyonel iç boşluk
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Image(
-                        painter = painterResource(R.drawable.save_icon),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .padding(end = 10.dp)
-                            .size(42.dp, 60.dp)
-                            .clickable( indication = null, // Ripple'ı kapatır
-                                interactionSource = remember { MutableInteractionSource() }) {
-                                viewModel.save("Barcod","${text.value}","${scannerResultScreenViewModel.getCurrentDateTime()}")
-                            }
-                    )
-
-                    if (scannerResultScreenViewModel.isUrl(text.value)) {
-                        Image(
-                            painter = painterResource(R.drawable.open_icon),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .padding(end = 10.dp)
-                                .size(42.dp, 60.dp)
-                                .clickable( indication = null, // Ripple'ı kapatır
-                                    interactionSource = remember { MutableInteractionSource() }) {
-                                    scannerResultScreenViewModel.openUrl(context, text.value)
-                                }
-                        )
-                    }
-
-                    Image(
-                        painter = painterResource(R.drawable.copy_icon),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .padding(end = 10.dp)
-                            .size(42.dp, 60.dp)
-                            .clickable ( indication = null, // Ripple'ı kapatır
-                                interactionSource = remember { MutableInteractionSource() }){
-                                scannerResultScreenViewModel.copyToClipboard(context, text.value)
-                            }
-                    )
-
-                    Image(
-                        painter = painterResource(R.drawable.share_icon),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .padding(end = 10.dp)
-                            .size(42.dp, 60.dp)
-                            .clickable( indication = null, // Ripple'ı kapatır
-                                interactionSource = remember { MutableInteractionSource() }) {
-                                scannerResultScreenViewModel.shareText(context, text.value)
-                            }
-                    )
-                    // WiFi QR kodu için bağlan butonu
-                    if (scannerResultScreenViewModel.isWifiQR(text.value)) {
-                        Image(
-                            painter = painterResource(R.drawable.wifi_icon), // WiFi ikonu ekleyin
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(42.dp, 60.dp)
-                                .clickable( indication = null,
-                                    interactionSource = remember { MutableInteractionSource() }) {
-                                    Toast.makeText(context, "WiFi butonu çalışıyor!", Toast.LENGTH_SHORT).show()
-                                    scannerResultScreenViewModel.connectToWifi(context, text.value)
-                                }
-                        )
-                    }
-                }
-            }
-
-        }
 
         Spacer(modifier = Modifier.padding(top = 12.dp))
 
@@ -305,67 +220,6 @@ fun SaveRow(list: QRsavesItem,viewModel: SaveViewModel,screenViewModel: ScannerR
     }
 }
 
-
-@Composable
-fun BarcodCustomTextField(textState: MutableState<String>) {
-
-    TextField(
-        value = textState.value,
-        onValueChange = { textState.value = it },
-        textStyle = TextStyle(color = Color.Black, fontSize = 18.sp),
-        placeholder = {
-            Text(
-                text = "Lütfen Ürün Kodunu Buraya girin",
-                color = Color.Gray,
-                fontSize = 18.sp
-            )
-        },
-        modifier = Modifier
-            .padding(start = 16.dp, end = 16.dp, top = 12.dp)
-            .fillMaxWidth()
-            .border(
-                width = 1.dp,
-                color = Color(0xFFFF5151),
-                shape = RoundedCornerShape(12.dp) // ✔️ Kenarları yuvarlat
-            ),
-            shape = RoundedCornerShape(4.dp), // ✔️ İç şekli de yuvarlat
-            colors = TextFieldDefaults.colors(
-            focusedContainerColor = Color.Transparent,
-            unfocusedContainerColor = Color.Transparent,
-            disabledContainerColor = Color.Transparent,
-            focusedTextColor = Color.Black,
-            focusedIndicatorColor = Color.Transparent, //En altaki çizgi
-            unfocusedIndicatorColor = Color.Transparent //En altaki çizgi
-
-        )
-    )
-}
-
-@Composable
-fun BarcodConverterButton(onClick: () -> Unit) {
-
-    androidx.compose.material3.Button(
-        onClick = onClick,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp, top = 12.dp)
-            .border(
-                width = 1.dp,
-                color = Secondary,
-                shape = RoundedCornerShape(12.dp)
-            ),
-        shape = RoundedCornerShape(12.dp),
-        colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-            containerColor = Color.Transparent, // ✔️ İç kısmı şeffaf
-            contentColor = Secondary,         // ✔️ Yazı rengi çerçeveyle uyumlu
-            disabledContainerColor = Color.Transparent,
-            disabledContentColor = Color.Gray,
-        )
-    ) {
-        Text(text = "Barcoda Dönüştür", fontSize = 20.sp)
-    }
-}
-
 @Composable
 fun SelectedListType(){
     var selectedType by remember { mutableStateOf(true)}
@@ -386,16 +240,8 @@ fun SelectedListType(){
                 modifier = Modifier.clickable(onClick = {
                     selectedType=true
                 }),
-                color = if(selectedType== true) Secondary else Color(0xFFA3A3A3)
+                color = if(selectedType== true) Color.Black else Color(0xFFA3A3A3)
             )
-
-            if(selectedType== true){
-                Box(modifier = Modifier
-                    .height(5.dp)
-                    .width(130.dp)
-                    .clip(shape = CircleShape)
-                    .background(color = Primary))
-            }
 
         }
 
@@ -409,16 +255,7 @@ fun SelectedListType(){
                 }),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                color = if(selectedType== false) Secondary else Color(0xFFA3A3A3))
-
-            if(selectedType == false){
-                Box(modifier = Modifier
-                    .height(5.dp)
-                    .width(130.dp)
-                    .clip(shape = CircleShape)
-                    .background(color = Primary))
-            }
-
+                color = if(selectedType== false) Color.Black else Color(0xFFA3A3A3))
         }
 
 
@@ -430,9 +267,8 @@ fun MainScreenHeader() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(56.dp)
-            .shadow(4.dp, RectangleShape, ambientColor = Color.Gray, spotColor = Color.Gray)
-            .background(Color.White)
+            .height(64.dp)
+            .background(Color(0xFFFF5151))
     ) {
         Row(
             modifier = Modifier.align(Alignment.Center),
@@ -441,7 +277,7 @@ fun MainScreenHeader() {
             Icon(
                 painter = painterResource(id = R.drawable.qritik_logo),
                 contentDescription = "Logo",
-                tint = Color.Unspecified,
+                tint = Color.White,
                 modifier = Modifier.size(48.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
@@ -449,7 +285,7 @@ fun MainScreenHeader() {
                 text = "QRitik",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFFFF5151)
+                color = Color.White
             )
         }
     }
@@ -458,6 +294,7 @@ fun MainScreenHeader() {
 
 @Preview(showBackground = true)
 @Composable
-fun show(){
-    SelectedListType()
+private fun Show(){
+    MainScreenHeader()
 }
+

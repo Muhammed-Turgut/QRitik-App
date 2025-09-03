@@ -44,6 +44,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.RealizeStudio.qritik.R
 import com.RealizeStudio.qritik.ui.ads.BannerAdView
@@ -56,12 +57,17 @@ import com.google.zxing.MultiFormatWriter
 import com.google.zxing.common.BitMatrix
 
 @Composable
-fun CreateScreen(viewModel: ScannerResultScreenViewModel = viewModel(),saveViewModel: SaveViewModel){
+fun CreateScreen(scannerResultScreenViewModel: ScannerResultScreenViewModel = hiltViewModel(),
+                 saveViewModel: SaveViewModel = hiltViewModel()){
+
     var text = remember { mutableStateOf("") }
     var qrBitmap by remember { mutableStateOf<Bitmap?>(null) }
     val context = LocalContext.current
     val selectQRType = remember { mutableStateOf(-1) }
     val selectQRTypeString = remember { mutableStateOf("") }
+    var textState = remember { mutableStateOf("") }
+    var textBarcod = remember { mutableStateOf("") }
+    var barcodBitmap by remember { mutableStateOf<Bitmap?>(null) }
 
     when(selectQRType.value){
         0 ->  selectQRTypeString.value ="KONT_BLG"
@@ -76,6 +82,7 @@ fun CreateScreen(viewModel: ScannerResultScreenViewModel = viewModel(),saveViewM
 
 
     val selectedIndex = remember { mutableIntStateOf(-1) } // Hiçbiri seçilmemişse -1
+    var qrTypeR = remember { mutableStateOf(true) }
 
 
     Column(modifier = Modifier
@@ -87,143 +94,286 @@ fun CreateScreen(viewModel: ScannerResultScreenViewModel = viewModel(),saveViewM
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            icons.forEachIndexed { index, iconResId ->
-                Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .background(
-                            color = if (selectQRType.value == index) Color(0xFFFFDAD9) else Color.Transparent,
-                            shape = RoundedCornerShape(8.dp)
-                        )
-                        .border(
-                            width = if (selectQRType.value == index) 2.dp else 1.dp,
-                            color = if (selectQRType.value == index) Color(0xFFFF5151) else Color.LightGray,
-                            shape = RoundedCornerShape(8.dp)
-                        )
-                        .clickable { selectQRType.value = index },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Image(
-                        painter = painterResource(iconResId),
-                        contentDescription = "",
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-            }
-        }
-
-
-        QRCustomTextField(text)
-
-        QRConverterButton(onClick = {
-            when(selectQRType.value) {
-                0 -> qrBitmap = viewModel.generateQrCode(text.value) // KONT_BLG
-                1 -> qrBitmap = viewModel.generateQrCode(text.value) // Ürün
-                2 -> qrBitmap = viewModel.generateQrCode(text.value) // URL
-                3 -> qrBitmap = viewModel.generateQrCode(text.value) // TXT
-                4-> qrBitmap = viewModel.generateQrCode(text.value) // WIFI
-                5 -> qrBitmap = viewModel.generateQrCode("mailto:${text.value}") // E-POSTA
-                6 -> qrBitmap = viewModel.generateQrCode("tel:${text.value}") // TELEFON
-                else -> Toast.makeText(context, "Geçersiz QR tipi!", Toast.LENGTH_SHORT).show()
+        SelectedCodType(qrType = {
+            if (it == true) {
+                qrTypeR.value = true
+            } else {
+                qrTypeR.value = false
             }
         })
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
         BannerAdView() //reklam alanı
+        Spacer(modifier = Modifier.height(12.dp))
 
-        qrBitmap?.let {
-            Column(modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally){
-
-                Image(bitmap = it.asImageBitmap(), contentDescription = "QR Code")
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp), // opsiyonel iç boşluk
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Image(
-                        painter = painterResource(R.drawable.save_icon),
-                        contentDescription = null,
+        if (qrTypeR.value == true) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                icons.forEachIndexed { index, iconResId ->
+                    Box(
                         modifier = Modifier
-                            .padding(end = 10.dp)
-                            .size(42.dp, 60.dp)
-                            .clickable( indication = null, // Ripple'ı kapatır
-                                interactionSource = remember { MutableInteractionSource() }) {
-                                saveViewModel.save("${selectQRTypeString.value}","${text.value}","${viewModel.getCurrentDateTime()}")
-                            }
-                    )
-
-                    if (viewModel.isUrl(text.value)) {
+                            .size(48.dp)
+                            .background(
+                                color = if (selectQRType.value == index) Color(0xFFFFDAD9) else Color.Transparent,
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .border(
+                                width = if (selectQRType.value == index) 2.dp else 1.dp,
+                                color = if (selectQRType.value == index) Color(0xFFFF5151) else Color.LightGray,
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .clickable { selectQRType.value = index },
+                        contentAlignment = Alignment.Center
+                    ) {
                         Image(
-                            painter = painterResource(R.drawable.open_icon),
+                            painter = painterResource(iconResId),
+                            contentDescription = "",
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                }
+            }
+
+
+            QRCustomTextField(text)
+
+            QRConverterButton(onClick = {
+                when (selectQRType.value) {
+                    0 -> qrBitmap = scannerResultScreenViewModel.generateQrCode(text.value) // KONT_BLG
+                    1 -> qrBitmap = scannerResultScreenViewModel.generateQrCode(text.value) // Ürün
+                    2 -> qrBitmap = scannerResultScreenViewModel.generateQrCode(text.value) // URL
+                    3 -> qrBitmap = scannerResultScreenViewModel.generateQrCode(text.value) // TXT
+                    4 -> qrBitmap = scannerResultScreenViewModel.generateQrCode(text.value) // WIFI
+                    5 -> qrBitmap = scannerResultScreenViewModel.generateQrCode("mailto:${text.value}") // E-POSTA
+                    6 -> qrBitmap = scannerResultScreenViewModel.generateQrCode("tel:${text.value}") // TELEFON
+                    else -> Toast.makeText(context, "Geçersiz QR tipi!", Toast.LENGTH_SHORT).show()
+                }
+            })
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+
+            qrBitmap?.let {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+
+                    Image(bitmap = it.asImageBitmap(), contentDescription = "QR Code")
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp), // opsiyonel iç boşluk
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.save_icon),
                             contentDescription = null,
                             modifier = Modifier
                                 .padding(end = 10.dp)
                                 .size(42.dp, 60.dp)
-                                .clickable( indication = null, // Ripple'ı kapatır
+                                .clickable(
+                                    indication = null, // Ripple'ı kapatır
                                     interactionSource = remember { MutableInteractionSource() }) {
-                                    viewModel.openUrl(context, text.value)
+                                    saveViewModel.save(
+                                        "${selectQRTypeString.value}",
+                                        "${text.value}",
+                                        "${scannerResultScreenViewModel.getCurrentDateTime()}"
+                                    )
                                 }
                         )
-                    }
 
-                    Image(
-                        painter = painterResource(R.drawable.copy_icon),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .padding(end = 10.dp)
-                            .size(42.dp, 60.dp)
-                            .clickable ( indication = null, // Ripple'ı kapatır
-                                interactionSource = remember { MutableInteractionSource() }){
-                                viewModel.copyToClipboard(context, text.value)
-                            }
-                    )
+                        if (scannerResultScreenViewModel.isUrl(text.value)) {
+                            Image(
+                                painter = painterResource(R.drawable.open_icon),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .padding(end = 10.dp)
+                                    .size(42.dp, 60.dp)
+                                    .clickable(
+                                        indication = null, // Ripple'ı kapatır
+                                        interactionSource = remember { MutableInteractionSource() }) {
+                                        scannerResultScreenViewModel.openUrl(context, text.value)
+                                    }
+                            )
+                        }
 
-                    Image(
-                        painter = painterResource(R.drawable.share_icon),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .padding(end = 10.dp)
-                            .size(42.dp, 60.dp)
-                            .clickable( indication = null, // Ripple'ı kapatır
-                                interactionSource = remember { MutableInteractionSource() }) {
-                                viewModel.shareText(context, text.value)
-                            }
-                    )
-                    // WiFi QR kodu için bağlan butonu
-                    if (viewModel.isWifiQR(text.value)) {
                         Image(
-                            painter = painterResource(R.drawable.wifi_icon), // WiFi ikonu ekleyin
+                            painter = painterResource(R.drawable.copy_icon),
                             contentDescription = null,
                             modifier = Modifier
+                                .padding(end = 10.dp)
                                 .size(42.dp, 60.dp)
-                                .clickable( indication = null,
+                                .clickable(
+                                    indication = null, // Ripple'ı kapatır
                                     interactionSource = remember { MutableInteractionSource() }) {
-                                    Toast.makeText(context, "WiFi butonu çalışıyor!", Toast.LENGTH_SHORT).show()
-                                    viewModel.connectToWifi(context, text.value)
+                                    scannerResultScreenViewModel.copyToClipboard(context, text.value)
                                 }
                         )
+
+                        Image(
+                            painter = painterResource(R.drawable.share_icon),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .padding(end = 10.dp)
+                                .size(42.dp, 60.dp)
+                                .clickable(
+                                    indication = null, // Ripple'ı kapatır
+                                    interactionSource = remember { MutableInteractionSource() }) {
+                                    scannerResultScreenViewModel.shareText(context, text.value)
+                                }
+                        )
+                        // WiFi QR kodu için bağlan butonu
+                        if (scannerResultScreenViewModel.isWifiQR(text.value)) {
+                            Image(
+                                painter = painterResource(R.drawable.wifi_icon), // WiFi ikonu ekleyin
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .size(42.dp, 60.dp)
+                                    .clickable(
+                                        indication = null,
+                                        interactionSource = remember { MutableInteractionSource() }) {
+                                        Toast.makeText(
+                                            context,
+                                            "WiFi butonu çalışıyor!",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        scannerResultScreenViewModel.connectToWifi(context, text.value)
+                                    }
+                            )
+                        }
                     }
                 }
+
             }
 
+
         }
+        else {
+            BarcodCustomTextField(textBarcod)
+            BarcodConverterButton(onClick = {
+               barcodBitmap = scannerResultScreenViewModel.generateBarcode(textBarcod.toString(),BarcodeFormat.AZTEC,250,400)
+                BarcodeFormat.UPC_EAN_EXTENSION
+            })
+            barcodBitmap?.let {
+                Spacer(modifier = Modifier.padding(top = 8.dp))
 
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
 
+                    Image(bitmap = it.asImageBitmap(), contentDescription = "QR Code")
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp), // opsiyonel iç boşluk
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.save_icon),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .padding(end = 10.dp)
+                                .size(42.dp, 60.dp)
+                                .clickable(
+                                    indication = null, // Ripple'ı kapatır
+                                    interactionSource = remember { MutableInteractionSource() }) {
+                                    saveViewModel.save(
+                                        "Barcod",
+                                        "${textBarcod.value}",
+                                        "${scannerResultScreenViewModel.getCurrentDateTime()}"
+                                    )
+                                }
+                        )
+
+                        if (scannerResultScreenViewModel.isUrl(textBarcod.value)) {
+                            Image(
+                                painter = painterResource(R.drawable.open_icon),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .padding(end = 10.dp)
+                                    .size(42.dp, 60.dp)
+                                    .clickable(
+                                        indication = null, // Ripple'ı kapatır
+                                        interactionSource = remember { MutableInteractionSource() }) {
+                                        scannerResultScreenViewModel.openUrl(context, textBarcod.value)
+                                    }
+                            )
+                        }
+
+                        Image(
+                            painter = painterResource(R.drawable.copy_icon),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .padding(end = 10.dp)
+                                .size(42.dp, 60.dp)
+                                .clickable(
+                                    indication = null, // Ripple'ı kapatır
+                                    interactionSource = remember { MutableInteractionSource() }) {
+                                    scannerResultScreenViewModel.copyToClipboard(
+                                        context,
+                                        textBarcod.value
+                                    )
+                                }
+                        )
+
+                        Image(
+                            painter = painterResource(R.drawable.share_icon),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .padding(end = 10.dp)
+                                .size(42.dp, 60.dp)
+                                .clickable(
+                                    indication = null, // Ripple'ı kapatır
+                                    interactionSource = remember { MutableInteractionSource() }) {
+                                    scannerResultScreenViewModel.shareText(context, textBarcod.value)
+                                }
+                        )
+                        // WiFi QR kodu için bağlan butonu
+                        if (scannerResultScreenViewModel.isWifiQR(textBarcod.value)) {
+                            Image(
+                                painter = painterResource(R.drawable.wifi_icon), // WiFi ikonu ekleyin
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .size(42.dp, 60.dp)
+                                    .clickable(
+                                        indication = null,
+                                        interactionSource = remember { MutableInteractionSource() }) {
+                                        Toast.makeText(
+                                            context,
+                                            "WiFi butonu çalışıyor!",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        scannerResultScreenViewModel.connectToWifi(
+                                            context,
+                                            textBarcod.value
+                                        )
+                                    }
+                            )
+                        }
+                    }
+                }
+
+            }
+        }
     }
+
 }
 
 @Composable
@@ -319,3 +469,109 @@ fun CreateScreenHeader() {
         }
     }
 }
+
+@Composable
+fun SelectedCodType(qrType: (Boolean) -> Unit){
+    var selectedType by remember { mutableStateOf(true)}
+
+
+    Row (modifier = Modifier
+        .fillMaxWidth()
+        .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center){
+
+        Column(modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally) {
+
+            Text(text = "QR Oluştur",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.clickable(onClick = {
+                    selectedType=true
+                    qrType(true)
+                }),
+                color = if(selectedType== true) Color.Black else Color(0xFFA3A3A3)
+            )
+
+        }
+
+        Column(modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally)  {
+
+            Text(text = "Barcod oluştur",
+                modifier = Modifier.clickable(onClick = {
+                    selectedType=false
+                    qrType(false)
+                }),
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = if(selectedType== false) Color.Black else Color(0xFFA3A3A3))
+        }
+
+
+    }
+}
+
+@Composable
+fun BarcodCustomTextField(textState: MutableState<String>) {
+
+    TextField(
+        value = textState.value,
+        onValueChange = { textState.value = it },
+        textStyle = TextStyle(color = Color.Black, fontSize = 18.sp),
+        placeholder = {
+            Text(
+                text = "Lütfen Ürün Kodunu Buraya girin",
+                color = Color.Gray,
+                fontSize = 18.sp
+            )
+        },
+        modifier = Modifier
+            .padding(start = 16.dp, end = 16.dp, top = 12.dp)
+            .fillMaxWidth()
+            .border(
+                width = 1.dp,
+                color = Color(0xFFFF5151),
+                shape = RoundedCornerShape(12.dp) // ✔️ Kenarları yuvarlat
+            ),
+        shape = RoundedCornerShape(4.dp), // ✔️ İç şekli de yuvarlat
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = Color.Transparent,
+            unfocusedContainerColor = Color.Transparent,
+            disabledContainerColor = Color.Transparent,
+            focusedTextColor = Color.Black,
+            focusedIndicatorColor = Color.Transparent, //En altaki çizgi
+            unfocusedIndicatorColor = Color.Transparent //En altaki çizgi
+
+        )
+    )
+}
+
+@Composable
+fun BarcodConverterButton(onClick: () -> Unit) {
+
+     Button(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 16.dp, end = 16.dp, top = 12.dp)
+            .border(
+                width = 1.dp,
+                color = Secondary,
+                shape = RoundedCornerShape(12.dp)
+            ),
+        shape = RoundedCornerShape(12.dp),
+        colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+            containerColor = Color.Transparent, // ✔️ İç kısmı şeffaf
+            contentColor = Secondary,         // ✔️ Yazı rengi çerçeveyle uyumlu
+            disabledContainerColor = Color.Transparent,
+            disabledContentColor = Color.Gray,
+        )
+    ) {
+        Text(text = "Barcoda Dönüştür", fontSize = 20.sp)
+    }
+}
+

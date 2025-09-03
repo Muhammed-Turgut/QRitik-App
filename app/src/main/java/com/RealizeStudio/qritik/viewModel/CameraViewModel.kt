@@ -1,6 +1,5 @@
 package com.RealizeStudio.qritik.viewModel
 
-import android.R
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -18,9 +17,12 @@ import com.RealizeStudio.qritik.screens.QRCodeAnalyzer
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
+import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.concurrent.Executors
+import javax.inject.Inject
 
-class CameraViewModel : ViewModel() {
+@HiltViewModel
+class CameraViewModel @Inject constructor() : ViewModel() {
 
     fun toggleFlash(camera: Camera, enable: Boolean) {
         camera.cameraControl.enableTorch(enable)

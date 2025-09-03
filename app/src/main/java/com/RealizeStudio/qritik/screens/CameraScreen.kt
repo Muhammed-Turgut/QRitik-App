@@ -35,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.RealizeStudio.qritik.R
@@ -46,8 +47,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun CameraScreen(
     navController: NavController,
-    permissionViewModel: PermissionViewModel = viewModel(),
-    cameraViewModel: CameraViewModel = viewModel()
+    permissionViewModel: PermissionViewModel = hiltViewModel(),
+    cameraViewModel: CameraViewModel = hiltViewModel()
 ) {
     
     val context = LocalContext.current

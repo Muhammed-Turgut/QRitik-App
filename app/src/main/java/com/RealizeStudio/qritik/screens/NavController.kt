@@ -1,22 +1,36 @@
 package com.RealizeStudio.qritik.screens
 
 import android.net.Uri
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.RealizeStudio.qritik.viewModel.SaveViewModel
+import com.google.accompanist.navigation.animation.AnimatedNavHost
 
+
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun NavHostScreen(saveViewModel: SaveViewModel){
+fun NavHostScreen(){
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = "SplashScreen") {
+
+    AnimatedNavHost(
+        navController = navController,
+        startDestination = "SplashScreen",
+        enterTransition = { fadeIn(animationSpec = tween(150)) },
+        exitTransition = { fadeOut(animationSpec = tween(150)) }
+    ){
 
         composable("SplashScreen") { SplashScreen(navController) }
 
-        composable ("AppScreen"){ AppScreen(navController,saveViewModel) }
+        composable ("AppScreen"){ AppScreen(navController) }
 
         composable("CameraScreen") { CameraScreen(navController) }
 
@@ -53,9 +67,7 @@ fun NavHostScreen(saveViewModel: SaveViewModel){
                 qrCodeData = Uri.decode(qrCodeData),
                 imagePath = if (imagePath.isNotEmpty()) Uri.decode(imagePath) else null,
                 codeType = if (codeType.isNotEmpty()) Uri.decode(codeType) else null,
-                dateTime = if (dateTime.isNotEmpty()) Uri.decode(dateTime) else null,
-                saveViewModel = saveViewModel
-            )
+                dateTime = if (dateTime.isNotEmpty()) Uri.decode(dateTime) else null)
         }
 
     }
