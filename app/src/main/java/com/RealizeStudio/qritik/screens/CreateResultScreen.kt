@@ -20,6 +20,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -239,7 +242,9 @@ fun CreateResultScreen(scannerResultScreenViewModel: ScannerResultScreenViewMode
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
 
-                        Image(bitmap = it.asImageBitmap(), contentDescription = "QR Code")
+                        Image(bitmap = it.asImageBitmap(),
+                            contentDescription = "QR Code",
+                            modifier = Modifier.size(100.dp))
 
                         Spacer(modifier = Modifier.height(16.dp))
 
@@ -255,7 +260,7 @@ fun CreateResultScreen(scannerResultScreenViewModel: ScannerResultScreenViewMode
                                 contentDescription = null,
                                 modifier = Modifier
                                     .padding(end = 10.dp)
-                                    .size(42.dp, 60.dp)
+                                    .size(32.dp, 48.dp)
                                     .clickable(
                                         indication = null, // Ripple'ı kapatır
                                         interactionSource = remember { MutableInteractionSource() }) {
@@ -273,7 +278,7 @@ fun CreateResultScreen(scannerResultScreenViewModel: ScannerResultScreenViewMode
                                     contentDescription = null,
                                     modifier = Modifier
                                         .padding(end = 10.dp)
-                                        .size(42.dp, 60.dp)
+                                        .size(32.dp, 48.dp)
                                         .clickable(
                                             indication = null, // Ripple'ı kapatır
                                             interactionSource = remember { MutableInteractionSource() }) {
@@ -287,7 +292,7 @@ fun CreateResultScreen(scannerResultScreenViewModel: ScannerResultScreenViewMode
                                 contentDescription = null,
                                 modifier = Modifier
                                     .padding(end = 10.dp)
-                                    .size(42.dp, 60.dp)
+                                    .size(32.dp, 48.dp)
                                     .clickable(
                                         indication = null, // Ripple'ı kapatır
                                         interactionSource = remember { MutableInteractionSource() }) {
@@ -303,7 +308,7 @@ fun CreateResultScreen(scannerResultScreenViewModel: ScannerResultScreenViewMode
                                 contentDescription = null,
                                 modifier = Modifier
                                     .padding(end = 10.dp)
-                                    .size(42.dp, 60.dp)
+                                    .size(32.dp, 48.dp)
                                     .clickable(
                                         indication = null, // Ripple'ı kapatır
                                         interactionSource = remember { MutableInteractionSource() }) {
@@ -316,7 +321,7 @@ fun CreateResultScreen(scannerResultScreenViewModel: ScannerResultScreenViewMode
                                     painter = painterResource(R.drawable.wifi_icon), // WiFi ikonu ekleyin
                                     contentDescription = null,
                                     modifier = Modifier
-                                        .size(42.dp, 60.dp)
+                                        .size(32.dp, 48.dp)
                                         .clickable(
                                             indication = null,
                                             interactionSource = remember { MutableInteractionSource() }) {
@@ -341,11 +346,33 @@ fun CreateResultScreen(scannerResultScreenViewModel: ScannerResultScreenViewMode
             Box(modifier = Modifier.constrainAs(informative) {
                 start.linkTo(parent.start)
                 end.linkTo(parent.end)
-                bottom.linkTo(adBanner.top)
-            }){
-                Informative()
-            }
 
+                if (bitmap == null){
+                    top.linkTo(btn.bottom, margin = 16.dp)
+                }
+                else{
+                    bottom.linkTo(adBanner.top)
+                }
+
+            }){
+
+                val item = when(kodType){
+                    "AZTEC" -> informativeList[0]
+                    "CODE_128" -> informativeList[1]
+                    "EAN_13" -> informativeList[2]
+                    "CODABAR" -> informativeList[3]
+                    "CODE_39" -> informativeList[4]
+                    "CODE_93" -> informativeList[5]
+                    "DATA_MATRIX" -> informativeList[6]
+                    "EAN_8" -> informativeList[7]
+                    "ITF" -> informativeList[8]
+                    "PDF_417" -> informativeList[9]
+                    "UPC_A" -> informativeList[10]
+                    "UPC_E" -> informativeList[11]
+                    else -> informativeList[0]
+                }
+                Informative(item)
+            }
 
 
             Box(modifier = Modifier.constrainAs(adBanner) {
@@ -485,58 +512,127 @@ fun BarcodConverterButton(onClick: () -> Unit) {
     }
 }
 
+val informativeList = listOf<InformativeKod>(
+    InformativeKod("AZTEC",R.drawable.aztec_icon,"Çok veri saklayabilen 2D barkod türüdür, bozulsa bile okunabilir. En az 1 karakter yeterlidir (rakamsal veya metin olabilir).","Genellikle biniş kartlarında ve ulaşım biletlerinde kullanılan 2D barkod türüdür. Küçük alanda çok fazla veri saklayabilir ve bozuk olsa bile okunabilir."),
+
+    InformativeKod("CODE_128",R.drawable.codee_icon,"Harf, rakam ve özel karakterleri destekleyen yoğun lineer barkoddur. En az 1 karakter gerekir, uzunluk sınırlaması yoktur.","Harf, rakam ve özel karakterleri destekleyen, yüksek yoğunluklu lineer barkod formatıdır. Genellikle lojistik, depo yönetimi ve kargo takibinde kullanılır."),
+
+    InformativeKod("EAN_13",R.drawable.ean_icon,"Market ürünlerinde kullanılan 13 haneli sayısal barkoddur. Tam 13 hane rakam olmalı, başka karakter kabul etmez..","Marketlerde ürünlerin kasa okutma sisteminde gördüğünüz 13 haneli sayısal barkoddur. Küresel ticarette standart ürün kimliği sağlar."),
+
+    InformativeKod("CODABAR",R.drawable.codabar_icon,"Kan bankası ve kütüphane sistemlerinde kullanılan basit barkoddur. En az 2 rakam veya karakter gerekir, genellikle 0–9, A–D harfleri kabul edilir.","Eski ama basit yapılı barkod formatıdır. Kan bankaları, kütüphaneler ve bazı sağlık sistemlerinde tercih edilir."),
+
+    InformativeKod("CODE_39",R.drawable.codeee_icon,"Harf ve rakamları destekleyen ilk yaygın barkodlardan biridir. En az 1 karakter olmalı, A–Z, 0–9 ve bazı semboller kullanılabilir.","Harfleri ve rakamları destekleyen ilk yaygın barkodlardan biridir. Otomotiv ve savunma sanayinde uzun yıllardır kullanılır."),
+
+    InformativeKod("CODE_93",R.drawable.codeeee_icon,"Code 39’un daha kompakt versiyonudur. En az 1 karakter olmalı, A–Z, 0–9 ve özel karakterleri destekler.","Code 39’un geliştirilmiş, daha yoğun veri saklayabilen versiyonudur. Özellikle posta hizmetlerinde ve kurumsal envanter yönetiminde kullanılır."),
+
+    InformativeKod("DATA_MATRIX",R.drawable.data_matrix_icon,"Küçük alanda çok veri saklayan 2D barkoddur. En az 1 karakter (metin veya rakam) yeterlidir.","Çok küçük boyutta büyük veri saklayabilen 2D barkoddur. İlaç kutularında ve elektronik bileşenlerde sıkça kullanılır."),
+
+    InformativeKod("EAN_8",R.drawable.eann_icon,"Küçük ürünlerde kullanılan kısa barkoddur. Tam 8 hane rakam olmalı, başka karakter kabul etmez.","Küçük paketler için tasarlanmış 8 haneli sayısal barkoddur. Genellikle küçük ürünlerde alan tasarrufu için tercih edilir."),
+
+    InformativeKod("ITF",R.drawable.itf_icon,"Sadece sayısal veri için kullanılan barkoddur. En az 2 rakam olmalı ve rakam sayısı çift haneli olmalıdır (örn. 02, 1234, 567890).","Sadece rakamları destekleyen, çift satırlı (interleaved) barkod formatıdır. Karton koli ve lojistik ambalajlamada yaygın şekilde kullanılır."),
+
+    InformativeKod("PDF_417",R.drawable.pdf_icon,"Çok satırlı 2D barkoddur, belgelerde ve kimliklerde kullanılır. En az 1 karakter yeterlidir, binlerce karakter saklayabilir.","Çok satırlı 2D barkod türüdür. Kimlik kartları, sürücü belgeleri ve nakliye evraklarında sıkça karşımıza çıkar."),
+
+    InformativeKod("UPC_A",R.drawable.upc_a_icon,"ABD ve Kanada’da kullanılan 12 haneli barkoddur. Tam 12 hane rakam olmalı, harf kabul etmez.","ABD ve Kanada’da perakende ürünlerde kullanılan 12 haneli barkoddur. Market raflarındaki çoğu ürün bu formatla etiketlenir."),
+
+    InformativeKod("UPC_E",R.drawable.upc_e_icon,"UPC-A’nın sıkıştırılmış versiyonudur. Tam 6 hane rakam olmalı, bazı durumlarda sistem 12 haneye genişletir.","UPC-A’nın daha kısa ve sıkıştırılmış versiyonudur. Küçük paketlerde veya dar etiket alanlarında kullanılır."),)
+
 @Composable
-fun Informative(){
-    Box(modifier = Modifier
-        .fillMaxWidth()){
-
-        Column(modifier = Modifier
+fun Informative(informativeKod: InformativeKod){
+    Card(
+        modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
-            .background(Color.White)
-           ) {
-
-            Text(text = "AZTEC Kullanımı:",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                fontStyle = FontStyle.Italic)
-            
-            Row (modifier = Modifier
+            .padding(horizontal = 14.dp, vertical = 6.dp),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
+    ) {
+        Column(
+            modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 12.dp),
-                verticalAlignment = Alignment.CenterVertically){
+                .padding(20.dp)
+        ) {
+            // Başlık
+            Text(
+                text = "${informativeKod.name} Kullanımı",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF2C2C2C),
+                modifier = Modifier.padding(bottom = 14.dp)
+            )
 
-                Icon(painter = painterResource(R.drawable.qr_icon),
-                    contentDescription = null,
-                    tint = Color(0xFFFF5151),
-                    modifier = Modifier.size(54.dp)
-                )
+            // İkon ve kullanım açıklaması
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp),
+                verticalAlignment = Alignment.Top
+            ) {
+                // İkon container
+                Box(
+                    modifier = Modifier
+                        .size(60.dp)
+                        .background(
+                            color = Color(0xFFFF5151).copy(alpha = 0.1f),
+                            shape = RoundedCornerShape(8.dp)
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(informativeKod.image),
+                        contentDescription = "${informativeKod.name} ikonu",
+                        tint = Color(0xFFFF5151),
+                        modifier = Modifier.size(36.dp)
+                    )
+                }
 
-                Text(text = "Çok veri saklayabilen 2D barkod türüdür, bozulsa\n" +
-                        "bile okunabilir. En az 1 karakter yeterlidir\n" +
-                        "(rakamsal veya metin olabilir).",
-                    modifier = Modifier.padding(start = 8.dp),
+                // Kullanım açıklaması
+                Text(
+                    text = informativeKod.text1,
+                    modifier = Modifier
+                        .padding(start = 8.dp)
+                        .weight(1f),
                     fontSize = 12.sp,
                     color = Color(0xFF474747),
-                    fontWeight = FontWeight.Medium)
-
+                    fontWeight = FontWeight.Medium,
+                    lineHeight = 20.sp
+                )
             }
 
-            Text(text = "Genellikle biniş kartlarında ve ulaşım biletlerinde\n" +
-                    "kullanılan 2D barkod türüdür. Küçük alanda çok fazla\n" +
-                    "veri saklayabilir ve bozuk olsa bile okunabilir.",
-                modifier = Modifier.padding(top = 8.dp),
+            // Ayırıcı çizgi
+            Divider(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                color = Color(0xFFE0E0E0),
+                thickness = 1.dp
+            )
+
+            // Kullanım alanları başlığı
+            Text(
+                text = "Kullanım Alanları:",
                 fontSize = 12.sp,
-                color = Color(0xFF474747),
-                fontWeight = FontWeight.Medium)
+                fontWeight = FontWeight.SemiBold,
+                color = Color(0xFF2C2C2C),
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
 
+            // Kullanım alanları açıklaması
+            Text(
+                text = informativeKod.text2,
+                fontSize = 11.sp,
+                color = Color(0xFF666666),
+                fontWeight = FontWeight.Normal,
+                lineHeight = 18.sp
+            )
         }
-
     }
 }
+
+data class InformativeKod( val name:String, val image: Int, val text1:String, val text2:String)
 
 @Preview(showBackground = true)
 @Composable
 private fun Show(){
-    Informative()
+
 }
