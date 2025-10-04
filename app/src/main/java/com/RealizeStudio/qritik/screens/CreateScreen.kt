@@ -213,6 +213,9 @@ fun QRKodeListRow(qrKodItem: QRKodItem,
 
     Box(modifier = Modifier
         .fillMaxWidth()
+        .clickable(onClick = {
+        navController.navigate("CreateResultScreen/${"QR"}/${qrKodItem.name}")
+    })
         .height(62.dp),
         contentAlignment = Alignment.Center){
 
@@ -241,10 +244,7 @@ fun QRKodeListRow(qrKodItem: QRKodItem,
                 contentDescription = null,
                 modifier = Modifier
                     .padding(end = 12.dp)
-                    .size(18.dp)
-                    .clickable(onClick = {
-                        navController.navigate("CreateResultScreen/${"QR"}/${qrKodItem.name}")
-                    }))
+                    .size(18.dp))
 
         }
     }
@@ -256,7 +256,10 @@ fun BarKodListRow(item: BarKodItem,
 
     Box(modifier = Modifier
         .fillMaxWidth()
-        .height(62.dp),
+        .height(62.dp)
+        .clickable(onClick = {
+            navController.navigate("CreateResultScreen/${"Barcod"}/${item.name}")
+        }),
         contentAlignment = Alignment.Center){
 
         Row (modifier = Modifier
@@ -285,10 +288,7 @@ fun BarKodListRow(item: BarKodItem,
                 contentDescription = null,
                 modifier = Modifier
                     .padding(end = 12.dp)
-                    .size(18.dp)
-                    .clickable(onClick = {
-                        navController.navigate("CreateResultScreen/${"Barcod"}/${item.name}")
-                    }))
+                    .size(18.dp))
 
         }
 

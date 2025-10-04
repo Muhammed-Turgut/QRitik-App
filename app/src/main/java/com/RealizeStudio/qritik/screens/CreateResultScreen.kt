@@ -219,7 +219,11 @@ fun CreateResultScreen(scannerResultScreenViewModel: ScannerResultScreenViewMode
                               else -> BarcodeFormat.AZTEC
                             }
 
-                            bitmap = scannerResultScreenViewModel.generateBarcode(textKod.toString(),selectedFormat,250,400)
+
+                          bitmap = scannerResultScreenViewModel.generateBarcode(textKod.toString(),selectedFormat,250,400)
+
+
+
 
                         })
                     }
@@ -231,51 +235,57 @@ fun CreateResultScreen(scannerResultScreenViewModel: ScannerResultScreenViewMode
 
                 start.linkTo(parent.start)
                 end.linkTo(parent.end)
-                top.linkTo(btn.bottom)
+                top.linkTo(btn.bottom, margin = 24.dp)
 
             }) {
 
                 bitmap?.let {
 
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
+                    if (it.width == 100 && it.height == 100 ){
 
-                        Image(bitmap = it.asImageBitmap(),
-                            contentDescription = "QR Code",
-                            modifier = Modifier.size(100.dp))
 
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp), // opsiyonel iç boşluk
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Image(
-                                painter = painterResource(R.drawable.save_icon),
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .padding(end = 10.dp)
-                                    .size(32.dp, 48.dp)
-                                    .clickable(
-                                        indication = null, // Ripple'ı kapatır
-                                        interactionSource = remember { MutableInteractionSource() }) {
-                                        saveViewModel.save(
-                                            "${selectQRTypeString.value}",
-                                            "${textKod}",
-                                            "${scannerResultScreenViewModel.getCurrentDateTime()}"
-                                        )
-                                    }
-                            )
 
-                            if (scannerResultScreenViewModel.isUrl(textKod)) {
+                           Text(text = "Lütfen Açıklamayı okuyup doğru\n"+
+                                   "değerler ile üretim yapın",
+                               color = Color.Black,
+                               textAlign = TextAlign.Center,
+                               fontSize = 18.sp,
+                               lineHeight = 18.sp,
+                               fontStyle = FontStyle.Normal,
+                               fontWeight = FontWeight.Bold)
+
+
+                        }
+
+
+                    }
+                    else{
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+
+                            Image(bitmap = it.asImageBitmap(),
+                                contentDescription = "QR Code",
+                                modifier = Modifier.size(100.dp))
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp), // opsiyonel iç boşluk
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
                                 Image(
-                                    painter = painterResource(R.drawable.open_url_icon),
+                                    painter = painterResource(R.drawable.save_icon),
                                     contentDescription = null,
                                     modifier = Modifier
                                         .padding(end = 10.dp)
@@ -283,62 +293,82 @@ fun CreateResultScreen(scannerResultScreenViewModel: ScannerResultScreenViewMode
                                         .clickable(
                                             indication = null, // Ripple'ı kapatır
                                             interactionSource = remember { MutableInteractionSource() }) {
-                                            scannerResultScreenViewModel.openUrl(context, textKod)
+                                            saveViewModel.save(
+                                                "${selectQRTypeString.value}",
+                                                "${textKod}",
+                                                "${scannerResultScreenViewModel.getCurrentDateTime()}"
+                                            )
                                         }
                                 )
-                            }
 
-                            Image(
-                                painter = painterResource(R.drawable.copy_icon),
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .padding(end = 10.dp)
-                                    .size(32.dp, 48.dp)
-                                    .clickable(
-                                        indication = null, // Ripple'ı kapatır
-                                        interactionSource = remember { MutableInteractionSource() }) {
-                                        scannerResultScreenViewModel.copyToClipboard(
-                                            context,
-                                            textKod
-                                        )
-                                    }
-                            )
+                                if (scannerResultScreenViewModel.isUrl(textKod)) {
+                                    Image(
+                                        painter = painterResource(R.drawable.open_url_icon),
+                                        contentDescription = null,
+                                        modifier = Modifier
+                                            .padding(end = 10.dp)
+                                            .size(32.dp, 48.dp)
+                                            .clickable(
+                                                indication = null, // Ripple'ı kapatır
+                                                interactionSource = remember { MutableInteractionSource() }) {
+                                                scannerResultScreenViewModel.openUrl(context, textKod)
+                                            }
+                                    )
+                                }
 
-                            Image(
-                                painter = painterResource(R.drawable.share_icon),
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .padding(end = 10.dp)
-                                    .size(32.dp, 48.dp)
-                                    .clickable(
-                                        indication = null, // Ripple'ı kapatır
-                                        interactionSource = remember { MutableInteractionSource() }) {
-                                        scannerResultScreenViewModel.shareText(context, textKod)
-                                    }
-                            )
-                            // WiFi QR kodu için bağlan butonu
-                            if (scannerResultScreenViewModel.isWifiQR(textKod)) {
                                 Image(
-                                    painter = painterResource(R.drawable.wifi_icon), // WiFi ikonu ekleyin
+                                    painter = painterResource(R.drawable.copy_icon),
                                     contentDescription = null,
                                     modifier = Modifier
+                                        .padding(end = 10.dp)
                                         .size(32.dp, 48.dp)
                                         .clickable(
-                                            indication = null,
+                                            indication = null, // Ripple'ı kapatır
                                             interactionSource = remember { MutableInteractionSource() }) {
-                                            Toast.makeText(
-                                                context,
-                                                "WiFi butonu çalışıyor!",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                            scannerResultScreenViewModel.connectToWifi(
+                                            scannerResultScreenViewModel.copyToClipboard(
                                                 context,
                                                 textKod
                                             )
                                         }
                                 )
+
+                                Image(
+                                    painter = painterResource(R.drawable.share_icon),
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .padding(end = 10.dp)
+                                        .size(32.dp, 48.dp)
+                                        .clickable(
+                                            indication = null, // Ripple'ı kapatır
+                                            interactionSource = remember { MutableInteractionSource() }) {
+                                            scannerResultScreenViewModel.shareText(context, textKod)
+                                        }
+                                )
+                                // WiFi QR kodu için bağlan butonu
+                                if (scannerResultScreenViewModel.isWifiQR(textKod)) {
+                                    Image(
+                                        painter = painterResource(R.drawable.wifi_icon), // WiFi ikonu ekleyin
+                                        contentDescription = null,
+                                        modifier = Modifier
+                                            .size(32.dp, 48.dp)
+                                            .clickable(
+                                                indication = null,
+                                                interactionSource = remember { MutableInteractionSource() }) {
+                                                Toast.makeText(
+                                                    context,
+                                                    "WiFi butonu çalışıyor!",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                                scannerResultScreenViewModel.connectToWifi(
+                                                    context,
+                                                    textKod
+                                                )
+                                            }
+                                    )
+                                }
                             }
                         }
+
                     }
 
                 }
@@ -518,7 +548,7 @@ val informativeList = listOf<InformativeKod>(
 
     InformativeKod("CODE_128",R.drawable.codee_icon,"Harf, rakam ve özel karakterleri destekleyen yoğun lineer barkoddur. En az 1 karakter gerekir, uzunluk sınırlaması yoktur.","Harf, rakam ve özel karakterleri destekleyen, yüksek yoğunluklu lineer barkod formatıdır. Genellikle lojistik, depo yönetimi ve kargo takibinde kullanılır."),
 
-    InformativeKod("EAN_13",R.drawable.ean_icon,"Market ürünlerinde kullanılan 13 haneli sayısal barkoddur. Tam 13 hane rakam olmalı, başka karakter kabul etmez..","Marketlerde ürünlerin kasa okutma sisteminde gördüğünüz 13 haneli sayısal barkoddur. Küresel ticarette standart ürün kimliği sağlar."),
+    InformativeKod("EAN_13",R.drawable.ean_icon,"Market ürünlerinde kullanılan 12 haneli sayısal barkoddur. Tam 13 hane rakam olmalı, başka karakter kabul etmez..","Marketlerde ürünlerin kasa okutma sisteminde gördüğünüz 13 haneli sayısal barkoddur. Küresel ticarette standart ürün kimliği sağlar."),
 
     InformativeKod("CODABAR",R.drawable.codabar_icon,"Kan bankası ve kütüphane sistemlerinde kullanılan basit barkoddur. En az 2 rakam veya karakter gerekir, genellikle 0–9, A–D harfleri kabul edilir.","Eski ama basit yapılı barkod formatıdır. Kan bankaları, kütüphaneler ve bazı sağlık sistemlerinde tercih edilir."),
 
