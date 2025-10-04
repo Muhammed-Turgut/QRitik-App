@@ -1,4 +1,4 @@
-package com.RealizeStudio.qritik.screens
+package com.RealizeStudio.qritik.screens.navigator
 
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
@@ -13,6 +13,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.RealizeStudio.qritik.screens.CreateScreen
+import com.RealizeStudio.qritik.screens.MainScreen
 import com.RealizeStudio.qritik.viewModel.SaveViewModel
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 
@@ -26,7 +28,7 @@ fun AppScreen(navControllerNoBottom: NavController,
 
     Scaffold(
         bottomBar = {
-            BottomBar(navController,navControllerNoBottom)
+            BottomBar(navController, navControllerNoBottom)
         }
     ) { innerPadding ->
 
@@ -46,9 +48,10 @@ fun AppScreen(navControllerNoBottom: NavController,
             }
 
             composable(BottomNavItem.Create.route) {
-                CreateScreen(saveViewModel = viewModel,
+                CreateScreen(
+                    saveViewModel = viewModel,
                     navController = navControllerNoBottom
-                    )
+                )
             }
 
         }

@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.QRitikApp" parent="android:Theme.Material.Light.NoActionBar" />
-
-    <style name="Theme.MyApp.Splash" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@color/purpule</item>
-        <item name="windowSplashScreenAnimatedIcon">@color/purpule</item>
-        <item name="postSplashScreenTheme">@style/Theme.QRitikApp</item>
+    <style name="Theme.QRitikApp" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
     </style>
+
+
+
 </resources>

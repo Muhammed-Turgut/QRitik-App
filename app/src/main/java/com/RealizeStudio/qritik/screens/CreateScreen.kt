@@ -150,7 +150,7 @@ fun CreateScreenHeader(selected: (Boolean) -> Unit) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Yeni Olştur",
+                text = "Yeni Oluştur",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White,
@@ -218,7 +218,7 @@ fun QRKodeListRow(qrKodItem: QRKodItem,
 
         Row(modifier = Modifier
             .fillMaxSize()
-            .padding(start = 16.dp, end = 16.dp)
+            .padding(start = 14.dp, end = 14.dp)
             .clip(RoundedCornerShape(8.dp))
             .background(Color.White),
             verticalAlignment = Alignment.CenterVertically){
@@ -231,6 +231,7 @@ fun QRKodeListRow(qrKodItem: QRKodItem,
 
             Text(text = qrKodItem.name,
                 fontSize = 16.sp,
+                color = Color(0xFF474747),
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier
                     .weight(1f)
@@ -260,7 +261,7 @@ fun BarKodListRow(item: BarKodItem,
 
         Row (modifier = Modifier
             .fillMaxSize()
-            .padding(start = 16.dp, end = 16.dp)
+            .padding(start = 14.dp, end = 14.dp)
             .clip(RoundedCornerShape(8.dp))
             .background(Color.White),
             verticalAlignment = Alignment.CenterVertically){
@@ -274,6 +275,7 @@ fun BarKodListRow(item: BarKodItem,
 
             Text(text = item.name,
                 fontSize = 16.sp,
+                color = Color(0xFF474747),
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier
                     .weight(1f)

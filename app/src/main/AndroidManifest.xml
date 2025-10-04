@@ -12,7 +12,6 @@
     <uses-permission android:name="android.permission.CAMERA"></uses-permission>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"></uses-permission>
 
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
 
 
     <application
@@ -25,13 +24,13 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.MyApp.Splash"
+        android:theme="@style/Theme.QRitikApp"
         tools:targetApi="31">
         <activity
             android:name=".screens.MainActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.MyApp.Splash">
+            android:theme="@style/Theme.QRitikApp">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

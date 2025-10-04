@@ -1,4 +1,4 @@
-package com.RealizeStudio.qritik.screens
+package com.RealizeStudio.qritik.screens.navigator
 
 import android.net.Uri
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -10,6 +10,11 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.RealizeStudio.qritik.screens.CameraScreen
+import com.RealizeStudio.qritik.screens.CreateResultScreen
+import com.RealizeStudio.qritik.screens.CreateScreen
+import com.RealizeStudio.qritik.screens.ScannerResultScreen
+import com.RealizeStudio.qritik.screens.SplashScreen
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 
 
@@ -53,11 +58,12 @@ fun NavHostScreen(){
                 CreateResultScreen(
                     navController = navController,
                     type = if (type.isNotEmpty()) Uri.decode(type) else null,
-                    kodType = if (kodType.isNotEmpty()) Uri.decode(kodType) else null)
+                    kodType = if (kodType.isNotEmpty()) Uri.decode(kodType) else null
+                )
 
             }
 
-            composable("CreateScreen"){ CreateScreen(navController=navController) }
+            composable("CreateScreen"){ CreateScreen(navController = navController) }
 
             composable(
                 route = "ScannerResult/{qrCodeData}/{imagePath}/{codeType}/{dateTime}",
@@ -92,7 +98,8 @@ fun NavHostScreen(){
                     qrCodeData = Uri.decode(qrCodeData),
                     imagePath = if (imagePath.isNotEmpty()) Uri.decode(imagePath) else null,
                     codeType = if (codeType.isNotEmpty()) Uri.decode(codeType) else null,
-                    dateTime = if (dateTime.isNotEmpty()) Uri.decode(dateTime) else null)
+                    dateTime = if (dateTime.isNotEmpty()) Uri.decode(dateTime) else null
+                )
      }
    }
 }

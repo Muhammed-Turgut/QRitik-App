@@ -105,7 +105,7 @@ fun CreateResultScreen(scannerResultScreenViewModel: ScannerResultScreenViewMode
                             .padding(start = 12.dp)
                             .size(24.dp)
                             .clickable(onClick = {
-                                navController.navigate("CreateScreen")
+                                navController.navigate("AppScreen")
                             })
                     )
 
@@ -155,6 +155,7 @@ fun CreateResultScreen(scannerResultScreenViewModel: ScannerResultScreenViewMode
                 Text(
                     text = kodType?: " ",
                     fontSize = 16.sp,
+                    color= Color(0xFF474747),
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.padding(start = 12.dp)
                 )
