@@ -164,8 +164,10 @@ fun CreateScreenHeader(selected: (Boolean) -> Unit) {
                 modifier = Modifier
                     .padding(end = 16.dp)
                     .clickable(onClick={
-                        isSelected = !isSelected
-                        selected(isSelected)
+                        if (!isSelected) {
+                            isSelected = true
+                            selected(true)
+                        }
                     })) {
 
 
@@ -188,8 +190,10 @@ fun CreateScreenHeader(selected: (Boolean) -> Unit) {
                 modifier = Modifier
                     .padding(end = 16.dp)
                     .clickable(onClick={
-                        isSelected = !isSelected
-                        selected(isSelected)
+                        if (isSelected) {
+                            isSelected = false
+                            selected(false)
+                        }
                     })) {
 
                 Icon(painter = painterResource(R.drawable.barcod_icon),

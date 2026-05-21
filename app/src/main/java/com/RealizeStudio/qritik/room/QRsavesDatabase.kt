@@ -4,7 +4,7 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import com.RealizeStudio.qritik.data.entity.QRsavesItem
 
-@Database(entities = [QRsavesItem::class], version = 1, exportSchema = false)
+@Database(entities = [QRsavesItem::class], version = 2, exportSchema = false)
 abstract class QRsavesDatabase : RoomDatabase() {
     abstract fun qrSavesItemDao(): QRsavesItemDao
 }

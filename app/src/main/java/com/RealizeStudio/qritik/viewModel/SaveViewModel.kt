@@ -28,17 +28,13 @@ class SaveViewModel @Inject  constructor( val saveRepository: SaveRepository): V
 
 
 
-    fun save (qrType: String, qrContents: String, date: String){
+    fun save (qrType: String, qrContents: String, date: String, isCreated: Boolean = false){
         viewModelScope.launch {
             try {
-
-                saveRepository.save(qrType,qrContents,date)
-
+                saveRepository.save(qrType, qrContents, date, isCreated)
             }catch (e: Exception){
-
             }
         }
-
     }
 
     fun delete(id:Int){
@@ -47,9 +43,9 @@ class SaveViewModel @Inject  constructor( val saveRepository: SaveRepository): V
         }
     }
 
-    fun update(id: Int,qrType: String, qrContents: String, date: String){
+    fun update(id: Int, qrType: String, qrContents: String, date: String, isCreated: Boolean = false){
         viewModelScope.launch {
-            saveRepository.update(id,qrType,qrContents,date)
+            saveRepository.update(id, qrType, qrContents, date, isCreated)
         }
     }
 }

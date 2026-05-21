@@ -16,6 +16,8 @@ data class QRsavesItem(
     @ColumnInfo(name = "date")
     var date: String?,
 
+    @ColumnInfo(name = "is_created", defaultValue = "0")
+    var isCreated: Boolean = false
 ) {
     @PrimaryKey(autoGenerate = true)
     var id: Int = 0

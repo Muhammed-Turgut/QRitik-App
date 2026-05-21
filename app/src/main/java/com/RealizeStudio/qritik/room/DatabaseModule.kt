@@ -20,7 +20,8 @@ object DatabaseModule {
             context,
             QRsavesDatabase::class.java,
             "qr_saves_database"
-        ).build()
+        ).fallbackToDestructiveMigration()
+         .build()
     }
 
     @Provides

@@ -85,7 +85,7 @@ sealed class BottomNavItem(
 ) {
     object Home : BottomNavItem("home", R.drawable.home_selected, R.drawable.home_default, "Anasayfa")
     object Scanne : BottomNavItem("scanne", R.drawable.scanner_selected, R.drawable.scanner_default, "Tarat")
-    object Create : BottomNavItem("create", R.drawable.create_selected, R.drawable.create_default, "Oluştru")
+    object Create : BottomNavItem("create", R.drawable.create_selected, R.drawable.create_default, "Oluştur")
 
 }
 

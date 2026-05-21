@@ -9,14 +9,20 @@ import javax.inject.Singleton
 @Singleton
 class SaveDataSource @Inject constructor (var qRSavesItemDao: QRsavesItemDao) {
 
-    suspend fun save (qrType: String, qrContents: String, date: String){
-        val newSave = QRsavesItem(qrType,qrContents,date)
+    suspend fun save (qrType: String, qrContents: String, date: String, isCreated: Boolean = false){
+        val newSave = QRsavesItem(qrType, qrContents, date, isCreated)
         qRSavesItemDao.insert(newSave)
     }
 
-    suspend fun update (id: Int,qrType: String, qrContents: String, date: String){
-        val newSave = QRsavesItem(qrType,qrContents,date)
-        qRSavesItemDao.insert(newSave)
+    suspend fun update (id: Int, qrType: String, qrContents: String, date: String, isCreated: Boolean = false){
+        val item = qRSavesItemDao.getItemById(id)
+        item?.let {
+            it.QR_Type = qrType
+            it.QR_contents = qrContents
+            it.date = date
+            it.isCreated = isCreated
+            qRSavesItemDao.update(it)
+        }
     }
 
     suspend fun getAllSaves () : Flow<List<QRsavesItem>>{

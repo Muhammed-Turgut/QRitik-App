@@ -1,6 +1,7 @@
 package com.RealizeStudio.qritik.screens
 
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -173,7 +174,8 @@ fun ScannerResultScreen(
                         .size(42.dp, 60.dp)
                         .clickable( indication = null, // Ripple'ı kapatır
                             interactionSource = remember { MutableInteractionSource() }) {
-                            saveViewModel.save("${codeType}","${qrCodeData}","${dateTime}")
+                            saveViewModel.save("${codeType}","${qrCodeData}","${dateTime}", isCreated = false)
+                            Toast.makeText(context, "Kayıt başarıyla kaydedildi!", Toast.LENGTH_SHORT).show()
                         }
                 )
 

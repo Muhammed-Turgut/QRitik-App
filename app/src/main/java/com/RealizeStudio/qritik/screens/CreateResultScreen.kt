@@ -56,6 +56,10 @@ import com.RealizeStudio.qritik.ui.theme.Secondary
 import com.RealizeStudio.qritik.viewModel.SaveViewModel
 import com.RealizeStudio.qritik.viewModel.ScannerResultScreenViewModel
 import com.google.zxing.BarcodeFormat
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.runtime.LaunchedEffect
 
 @Composable
 fun CreateResultScreen(scannerResultScreenViewModel: ScannerResultScreenViewModel= hiltViewModel(),
@@ -68,7 +72,23 @@ fun CreateResultScreen(scannerResultScreenViewModel: ScannerResultScreenViewMode
     val context = LocalContext.current
     var textKod by remember { mutableStateOf("") }
 
-    val selectQRTypeString = remember { mutableStateOf("") }
+    val selectQRTypeString = remember(kodType) {
+        mutableStateOf(
+            if (type == "QR") {
+                when (kodType) {
+                    "Metin" -> "METIN"
+                    "URL" -> "URL"
+                    "Telefon" -> "TELEFON"
+                    "Wi-Fi" -> "WIFI"
+                    "Email Adresi" -> "E_POSTA"
+                    "Kişi" -> "KONT_BLG"
+                    else -> "METIN"
+                }
+            } else {
+                kodType ?: "BARCODE"
+            }
+        )
+    }
 
 
     Scaffold(modifier = Modifier.fillMaxSize()){ innerPadding ->
@@ -172,7 +192,7 @@ fun CreateResultScreen(scannerResultScreenViewModel: ScannerResultScreenViewMode
                 if (type != null){
 
                     if (type == "QR"){
-                        QRCustomTextField(text = { text ->
+                        QRDynamicFields(kodType = kodType ?: "Metin", onValueCompiled = { text ->
                             textKod = text
                         })
                     }
@@ -195,13 +215,19 @@ fun CreateResultScreen(scannerResultScreenViewModel: ScannerResultScreenViewMode
 
                     if (type == "QR"){
                         QRConverterButton(onClick = {
-
-
-
+                            if (textKod.trim().isNotEmpty()) {
+                                bitmap = scannerResultScreenViewModel.generateQrCode(textKod, size = 512)
+                            } else {
+                                Toast.makeText(context, "Lütfen gerekli alanları doldurun!", Toast.LENGTH_SHORT).show()
+                            }
                         })
                     }
                     else if (type == "Barcod"){
                         BarcodConverterButton(onClick = {
+                            if (textKod.trim().isEmpty()) {
+                                Toast.makeText(context, "Lütfen bir ürün kodu girin!", Toast.LENGTH_SHORT).show()
+                                return@BarcodConverterButton
+                            }
 
                           val selectedFormat = when(kodType){
                                 "AZTEC" -> BarcodeFormat.AZTEC
@@ -221,9 +247,6 @@ fun CreateResultScreen(scannerResultScreenViewModel: ScannerResultScreenViewMode
 
 
                           bitmap = scannerResultScreenViewModel.generateBarcode(textKod.toString(),selectedFormat,250,400)
-
-
-
 
                         })
                     }
@@ -296,8 +319,10 @@ fun CreateResultScreen(scannerResultScreenViewModel: ScannerResultScreenViewMode
                                             saveViewModel.save(
                                                 "${selectQRTypeString.value}",
                                                 "${textKod}",
-                                                "${scannerResultScreenViewModel.getCurrentDateTime()}"
+                                                "${scannerResultScreenViewModel.getCurrentDateTime()}",
+                                                isCreated = true
                                             )
+                                            Toast.makeText(context, "Kayıt başarıyla kaydedildi!", Toast.LENGTH_SHORT).show()
                                         }
                                 )
 
