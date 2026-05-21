@@ -21,6 +21,7 @@ import com.google.accompanist.navigation.animation.AnimatedNavHost
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun NavHostScreen(){
+
     val navController = rememberNavController()
 
 

@@ -1,6 +1,5 @@
 package com.RealizeStudio.qritik.screens
 
-
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
@@ -23,6 +22,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -33,7 +33,6 @@ import com.RealizeStudio.qritik.R
 import com.RealizeStudio.qritik.viewModel.CameraViewModel
 import com.RealizeStudio.qritik.viewModel.PermissionViewModel
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CameraScreen(
@@ -41,7 +40,6 @@ fun CameraScreen(
     permissionViewModel: PermissionViewModel = hiltViewModel(),
     cameraViewModel: CameraViewModel = hiltViewModel()
 ) {
-    
     val context = LocalContext.current
     val cameraPermissionGranted by permissionViewModel.cameraPermissionGranted.collectAsState()
     var showSettingsDialog by remember { mutableStateOf(false) }
@@ -50,10 +48,6 @@ fun CameraScreen(
     // Kamera ve flash durumu
     var cameraInstance: Camera? by remember { mutableStateOf(null) }
     var isFlashOn by remember { mutableStateOf(false) }
-
-
-
-
 
     val selectedImageUri = remember { mutableStateOf<Uri?>(null) }
 
@@ -77,15 +71,13 @@ fun CameraScreen(
         }
     }
 
-
-
     // İzin isteme launcher'ı
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         if (isGranted) {
             permissionViewModel.updateCameraPermission(true)
-            Toast.makeText(context, "Kamera izni verildi", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.camera_permission_granted), Toast.LENGTH_SHORT).show()
         } else {
             showSettingsDialog = true
         }
@@ -102,13 +94,13 @@ fun CameraScreen(
             onDismissRequest = { showSettingsDialog = false },
             title = {
                 Text(
-                    text = "Kamera İzni Gerekli",
+                    text = stringResource(id = R.string.camera_permission_required),
                     fontWeight = FontWeight.Bold
                 )
             },
             text = {
                 Text(
-                    text = "Kamera izni reddedildi. QR kod okuyabilmek için uygulama ayarlarından kamera iznini manuel olarak vermeniz gerekiyor.",
+                    text = stringResource(id = R.string.camera_permission_denied_message),
                     fontSize = 14.sp
                 )
             },
@@ -122,17 +114,17 @@ fun CameraScreen(
                         context.startActivity(intent)
                     },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF9818D6)
+                        containerColor = MaterialTheme.colorScheme.primary
                     )
                 ) {
-                    Text("Ayarlara Git", color = Color.White)
+                    Text(stringResource(id = R.string.go_to_settings), color = Color.White)
                 }
             },
             dismissButton = {
                 TextButton(
                     onClick = { showSettingsDialog = false }
                 ) {
-                    Text("İptal", color = Color.Gray)
+                    Text(stringResource(id = R.string.cancel), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
                 }
             }
         )
@@ -151,7 +143,7 @@ fun CameraScreen(
                 // Geri butonu
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Back",
+                    contentDescription = stringResource(id = R.string.back),
                     tint = Color.White,
                     modifier = Modifier
                         .padding(top = 44.dp)
@@ -171,8 +163,7 @@ fun CameraScreen(
                 ) {
                     CameraQRScanner(
                         onQRCodeDetected = { qrCode ->
-                            // QR kod bulunduğunda herhangi bir ek işlem yapma
-                            // Navigasyon CameraQRScanner içinde yapılıyor
+                            // QR kod bulunduğunda navigasyon CameraQRScanner içinde yapılıyor
                         },
                         onError = { error ->
                             Toast.makeText(context, error, Toast.LENGTH_LONG).show()
@@ -204,10 +195,10 @@ fun CameraScreen(
                                     isFlashOn = !isFlashOn
                                     cameraViewModel.toggleFlash(camera, isFlashOn)
                                 } catch (e: Exception) {
-                                    Toast.makeText(context, "Flash kontrolü başarısız: ${e.message}", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, context.getString(R.string.error_occurred) + ": ${e.message}", Toast.LENGTH_SHORT).show()
                                 }
                             } ?: run {
-                                Toast.makeText(context, "Kamera henüz hazır değil", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, context.getString(R.string.camera_not_ready), Toast.LENGTH_SHORT).show()
                             }
                         }
                     ) {
@@ -215,25 +206,39 @@ fun CameraScreen(
                             painter = painterResource(
                                 id = if (isFlashOn) R.drawable.flash_on_icon else R.drawable.flash_off_icon
                             ),
-                            contentDescription = if (isFlashOn) "Flash Kapat" else "Flash Aç",
+                            contentDescription = if (isFlashOn) stringResource(id = R.string.flash_off) else stringResource(id = R.string.flash_on),
                             tint = Color.White,
                             modifier = Modifier.size(32.dp)
                         )
                     }
 
-
                     // Galeri butonu
                     IconButton(
                         onClick = {
-
                             imagePickerLauncher.launch("image/*")
-
-
                         }
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.galleriy),
-                            contentDescription = "Galeri Aç",
+                            contentDescription = stringResource(id = R.string.open_gallery),
+                            tint = Color.White,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+
+                    // Camera Switch butonu
+                    IconButton(
+                        onClick = {
+                            lensFacing = if (lensFacing == CameraSelector.LENS_FACING_BACK) {
+                                CameraSelector.LENS_FACING_FRONT
+                            } else {
+                                CameraSelector.LENS_FACING_BACK
+                            }
+                        }
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.switch_the_camera_icon),
+                            contentDescription = stringResource(id = R.string.switch_camera),
                             tint = Color.White,
                             modifier = Modifier.size(32.dp)
                         )
@@ -254,8 +259,6 @@ fun CameraScreen(
     }
 }
 
-
-
 @Composable
 fun PermissionDeniedContent(
     onRequestPermission: () -> Unit,
@@ -269,9 +272,10 @@ fun PermissionDeniedContent(
     ) {
         Card(
             colors = CardDefaults.cardColors(
-                containerColor = Color.White
+                containerColor = MaterialTheme.colorScheme.surface
             ),
-            shape = RoundedCornerShape(16.dp)
+            shape = RoundedCornerShape(16.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
             Column(
                 modifier = Modifier
@@ -286,17 +290,17 @@ fun PermissionDeniedContent(
                 )
 
                 Text(
-                    text = "Kamera İzni Gerekli",
+                    text = stringResource(id = R.string.camera_permission_required),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black,
+                    color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
 
                 Text(
-                    text = "QR kod okuyabilmek için kamera iznine ihtiyacımız var.",
+                    text = stringResource(id = R.string.camera_permission_needed_description),
                     fontSize = 14.sp,
-                    color = Color.Gray,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(bottom = 24.dp)
                 )
@@ -306,11 +310,11 @@ fun PermissionDeniedContent(
                     onClick = onRequestPermission,
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF9818D6)
+                        containerColor = MaterialTheme.colorScheme.primary
                     )
                 ) {
                     Text(
-                        text = "İzin Ver",
+                        text = stringResource(id = R.string.grant_permission),
                         color = Color.White,
                         fontSize = 16.sp
                     )
@@ -324,8 +328,8 @@ fun PermissionDeniedContent(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = "Manuel Ayarlar",
-                        color = Color(0xFF9818D6),
+                        text = stringResource(id = R.string.manual_settings),
+                        color = MaterialTheme.colorScheme.primary,
                         fontSize = 14.sp
                     )
                 }

@@ -1,3 +1,130 @@
 <resources>
     <string name="app_name">QRitik</string>
+
+    <!-- General UI / Tab / Navigation -->
+    <string name="records">Records</string>
+    <string name="no_records_to_list">No records to list</string>
+    <string name="scanned">Scanned</string>
+    <string name="created">Created</string>
+    <string name="favorites">Favorites</string>
+    <string name="favorite_records">Favorite Records</string>
+    <string name="no_favorite_records_yet">No favorite records yet</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_scan">Scan</string>
+    <string name="nav_create">Create</string>
+    <string name="nav_favorites">Favorites</string>
+    <string name="create_new">Create New</string>
+    <string name="qr_code">QR Code</string>
+    <string name="barcode">Barcode</string>
+    <string name="back">Back</string>
+    <string name="delete">Delete</string>
+    <string name="share">Share</string>
+
+    <!-- Barcode / QR Types -->
+    <string name="type_text">Text</string>
+    <string name="type_url">URL</string>
+    <string name="type_phone">Phone</string>
+    <string name="type_wifi">Wi-Fi</string>
+    <string name="type_email">E-mail</string>
+    <string name="type_contact">Contact</string>
+    <string name="type_sms">SMS</string>
+    <string name="type_location">Location</string>
+    <string name="type_unknown">Unknown</string>
+
+    <!-- Creation Input Fields -->
+    <string name="enter_text_here">Please enter text here...</string>
+    <string name="web_address_url">Web Address (URL)</string>
+    <string name="enter_link_here">Please enter link here...</string>
+    <string name="phone_number">Phone Number</string>
+    <string name="enter_phone_number">Please enter phone number...</string>
+    <string name="network_name_ssid">Network Name (SSID)</string>
+    <string name="enter_network_name">Enter network name...</string>
+    <string name="password">Password</string>
+    <string name="enter_network_password">Enter network password...</string>
+    <string name="security_type">Security Type:</string>
+    <string name="open_security">Open</string>
+    <string name="email_address">E-mail Address</string>
+    <string name="enter_email_address">Please enter e-mail address...</string>
+    <string name="name_surname">Full Name</string>
+    <string name="enter_contact_name">Enter contact name...</string>
+    <string name="phone_label">Phone</string>
+    <string name="enter_contact_phone">Enter contact phone...</string>
+    <string name="email_label">E-mail</string>
+    <string name="enter_contact_email">Enter contact e-mail...</string>
+
+    <!-- Creation Actions -->
+    <string name="convert_to_qr">Convert to QR</string>
+    <string name="enter_product_code_here">Please enter product code here</string>
+    <string name="convert_to_barcode">Convert to Barcode</string>
+    <string name="fill_required_fields">Please fill in required fields!</string>
+    <string name="enter_product_code">Please enter a product code!</string>
+    <string name="read_description_warning">Please read description and\ncreate with correct values</string>
+    <string name="record_saved_successfully">Record saved successfully!</string>
+
+    <!-- Scanner / Result Screen -->
+    <string name="scan_result">Scan Result</string>
+    <string name="read_data">Read Data:</string>
+    <string name="added_to_favorites">Added to favorites!</string>
+    <string name="add_to_favorites">Add to Favorites</string>
+    <string name="qr_code_image">QR Code Image</string>
+    <string name="remove_favorite">Remove Favorite</string>
+
+    <!-- Camera Screen -->
+    <string name="camera_permission_granted">Camera permission granted</string>
+    <string name="camera_permission_required">Camera Permission Required</string>
+    <string name="camera_permission_denied_message">Camera permission was denied. To scan QR codes, you need to manually grant camera permission from app settings.</string>
+    <string name="go_to_settings">Go to Settings</string>
+    <string name="cancel">Cancel</string>
+    <string name="flash_off">Turn off Flash</string>
+    <string name="flash_on">Turn on Flash</string>
+    <string name="camera_not_ready">Camera is not ready yet</string>
+    <string name="open_gallery">Open Gallery</string>
+    <string name="switch_camera">Switch Camera</string>
+    <string name="camera_permission_needed_description">We need camera permission to scan QR codes.</string>
+    <string name="grant_permission">Grant Permission</string>
+    <string name="manual_settings">Manual Settings</string>
+
+    <!-- Splash Screen -->
+    <string name="splash_description">QRitik QR code and Barcode scanner</string>
+
+    <!-- Viewmodel / Helper Strings -->
+    <string name="url_cannot_be_opened">URL could not be opened</string>
+    <string name="wifi_connect_clicked">WiFi connect button clicked!</string>
+    <string name="wifi_connect_manual">Network: %1$s\nPassword: %2$s\nPlease connect manually.</string>
+    <string name="wifi_redirecting">You are being redirected to WiFi settings.</string>
+    <string name="wifi_unknown_format">Unknown WiFi format:\n%1$s</string>
+    <string name="wifi_settings_failed">WiFi settings could not be opened: %1$s</string>
+    <string name="phone_redirecting">You are being redirected to dialer.</string>
+    <string name="error_occurred">An error occurred.</string>
+
+    <!-- Barcode Informative Cards -->
+    <string name="info_usage">Usage</string>
+    <string name="info_usage_areas">Usage Areas:</string>
+    <string name="info_aztec_text1">It is a 2D barcode type that can store a lot of data, readable even if damaged. At least 1 character is enough (can be numeric or text).</string>
+    <string name="info_aztec_text2">Standard 2D barcode format commonly used for boarding passes and transport tickets. It can store high-density data in small spaces and remains readable even if damaged.</string>
+    <string name="info_code_128_text1">High-density linear barcode supporting letters, numbers, and special characters. At least 1 character required, no length limit.</string>
+    <string name="info_code_128_text2">High-density linear barcode supporting letters, numbers, and special characters. Widely used in logistics, inventory management, and shipping.</string>
+    <string name="info_ean_13_text1">A 12-digit numeric barcode used on retail products. Must be exactly 13 digits, no other characters allowed.</string>
+    <string name="info_ean_13_text2">The 13-digit numeric barcode seen on products at supermarket checkout systems. Provides a global standard product identity.</string>
+    <string name="info_codabar_text1">A simple barcode used in blood bank and library systems. Requires at least 2 digits or characters, usually accepts 0-9 and A-D.</string>
+    <string name="info_codabar_text2">An older but simple barcode format. Preferred in blood banks, libraries, and some healthcare systems.</string>
+    <string name="info_code_39_text1">One of the first common barcodes supporting letters and digits. Must be at least 1 character, accepts A-Z, 0-9, and some symbols.</string>
+    <string name="info_code_39_text2">One of the first widely used barcodes supporting letters and numbers. Used for many years in the automotive and defense sectors.</string>
+    <string name="info_code_93_text1">A more compact version of Code 39. Must be at least 1 character, supports A-Z, 0-9, and special characters.</string>
+    <string name="info_code_93_text2">An improved, higher density version of Code 39. Used primarily in postal services and corporate inventory management.</string>
+    <string name="info_data_matrix_text1">2D barcode storing a large amount of data in small spaces. At least 1 character (text or numeric) is sufficient.</string>
+    <string name="info_data_matrix_text2">2D barcode capable of storing large amounts of data in a tiny size. Frequently used on medicine packaging and electronic components.</string>
+    <string name="info_ean_8_text1">A short barcode used on small products. Must be exactly 8 digits, no other characters allowed.</string>
+    <string name="info_ean_8_text2">8-digit numeric barcode designed for small packages. Preferred on smaller items to save labeling space.</string>
+    <string name="info_itf_text1">A barcode used exclusively for numeric data. Must be at least 2 digits, and the digit count must be even (e.g., 02, 1234).</string>
+    <string name="info_itf_text2">An interleaved numeric-only barcode format. Commonly used on corrugated boxes and transport packaging.</string>
+    <string name="info_pdf_417_text1">A multi-row 2D barcode used on documents and IDs. At least 1 character is enough, can store thousands of characters.</string>
+    <string name="info_pdf_417_text2">A multi-row 2D barcode format. Often seen on ID cards, driver\'s licenses, and shipping documentation.</string>
+    <string name="info_upc_a_text1">A 12-digit barcode used in the US and Canada. Must be exactly 12 digits, no letters allowed.</string>
+    <string name="info_upc_a_text2">12-digit barcode used for retail products in the US and Canada. Most products on supermarket shelves are tagged with this.</string>
+    <string name="info_upc_e_text1">A compressed version of UPC-A. Must be exactly 6 digits, expanding to 12 digits in some systems.</string>
+    <string name="info_upc_e_text2">A shorter, compressed version of UPC-A. Used on small packages or narrow label areas.</string>
+    <string name="open">Open</string>
+    <string name="copy">Copy</string>
+    <string name="wifi">Wi-Fi</string>
 </resources>

@@ -9,12 +9,12 @@ import javax.inject.Singleton
 @Singleton
 class SaveRepository @Inject constructor(var saveDataSource: SaveDataSource) {
 
-    suspend fun save (qrType: String, qrContents: String, date: String, isCreated: Boolean = false){
-        saveDataSource.save(qrType, qrContents, date, isCreated)
+    suspend fun save (qrType: String, qrContents: String, date: String, isCreated: Boolean = false, isFavorite: Boolean = false){
+        saveDataSource.save(qrType, qrContents, date, isCreated, isFavorite)
     }
 
-    suspend fun update (id: Int, qrType: String, qrContents: String, date: String, isCreated: Boolean = false){
-        saveDataSource.update(id, qrType, qrContents, date, isCreated)
+    suspend fun update (id: Int, qrType: String, qrContents: String, date: String, isCreated: Boolean = false, isFavorite: Boolean = false){
+        saveDataSource.update(id, qrType, qrContents, date, isCreated, isFavorite)
     }
 
     suspend fun getAllSaves () : Flow<List<QRsavesItem>>{

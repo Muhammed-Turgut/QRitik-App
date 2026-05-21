@@ -1,0 +1,129 @@
+<resources>
+    <string name="app_name">QRitik</string>
+
+    <!-- General UI / Tab / Navigation -->
+    <string name="records">Kayıtlar</string>
+    <string name="no_records_to_list">Listelenecek kayıt yok</string>
+    <string name="scanned">Tarananlar</string>
+    <string name="created">Üretilenler</string>
+    <string name="favorites">Favoriler</string>
+    <string name="favorite_records">Favori Kayıtlar</string>
+    <string name="no_favorite_records_yet">Henüz favori kayıt yok</string>
+    <string name="nav_home">Anasayfa</string>
+    <string name="nav_scan">Tarat</string>
+    <string name="nav_create">Oluştur</string>
+    <string name="nav_favorites">Favoriler</string>
+    <string name="create_new">Yeni Oluştur</string>
+    <string name="qr_code">QR Kod</string>
+    <string name="barcode">Barkod</string>
+    <string name="back">Geri</string>
+    <string name="delete">Sil</string>
+    <string name="share">Paylaş</string>
+
+    <!-- Barcode / QR Types -->
+    <string name="type_text">Metin</string>
+    <string name="type_url">URL</string>
+    <string name="type_phone">Telefon</string>
+    <string name="type_wifi">Wi-Fi</string>
+    <string name="type_email">Email Adresi</string>
+    <string name="type_contact">Kişi</string>
+    <string name="type_sms">SMS</string>
+    <string name="type_location">Konum</string>
+    <string name="type_unknown">Bilinmeyen</string>
+
+    <!-- Creation Input Fields -->
+    <string name="enter_text_here">Lütfen metni buraya girin...</string>
+    <string name="web_address_url">Web Adresi (URL)</string>
+    <string name="enter_link_here">Lütfen linki buraya girin...</string>
+    <string name="phone_number">Telefon Numarası</string>
+    <string name="enter_phone_number">Lütfen telefon numarasını girin...</string>
+    <string name="network_name_ssid">Ağ Adı (SSID)</string>
+    <string name="enter_network_name">Ağ adını girin...</string>
+    <string name="password">Şifre</string>
+    <string name="enter_network_password">Ağ şifresini girin...</string>
+    <string name="security_type">Güvenlik Tipi:</string>
+    <string name="open_security">Açık</string>
+    <string name="email_address">E-posta Adresi</string>
+    <string name="enter_email_address">Lütfen e-posta adresini girin...</string>
+    <string name="name_surname">İsim Soyisim</string>
+    <string name="enter_contact_name">Kişi adını girin...</string>
+    <string name="phone_label">Telefon</string>
+    <string name="enter_contact_phone">Kişi telefonunu girin...</string>
+    <string name="email_label">E-posta</string>
+    <string name="enter_contact_email">Kişi e-postasını girin...</string>
+
+    <!-- Creation Actions -->
+    <string name="convert_to_qr">QR Dönüştür</string>
+    <string name="enter_product_code_here">Lütfen Ürün Kodunu Buraya girin</string>
+    <string name="convert_to_barcode">Barcoda Dönüştür</string>
+    <string name="fill_required_fields">Lütfen gerekli alanları doldurun!</string>
+    <string name="enter_product_code">Lütfen bir ürün kodu girin!</string>
+    <string name="read_description_warning">Lütfen Açıklamayı okuyup doğru\ndeğerler ile üretim yapın</string>
+    <string name="record_saved_successfully">Kayıt başarıyla kaydedildi!</string>
+
+    <!-- Scanner / Result Screen -->
+    <string name="scan_result">Tarama Sonucu</string>
+    <string name="read_data">Okunan Veri:</string>
+    <string name="added_to_favorites">Favorilere eklendi!</string>
+    <string name="add_to_favorites">Favorilere Ekle</string>
+    <string name="qr_code_image">QR Kod Resmi</string>
+    <string name="remove_favorite">Favoriyi Kaldır</string>
+
+    <!-- Camera Screen -->
+    <string name="camera_permission_granted">Kamera izni verildi</string>
+    <string name="camera_permission_required">Kamera İzni Gerekli</string>
+    <string name="camera_permission_denied_message">Kamera izni reddedildi. QR kod okuyabilmek için uygulama ayarlarından kamera iznini manuel olarak vermeniz gerekiyor.</string>
+    <string name="go_to_settings">Ayarlara Git</string>
+    <string name="cancel">İptal</string>
+    <string name="flash_off">Flash Kapat</string>
+    <string name="flash_on">Flash Aç</string>
+    <string name="camera_not_ready">Kamera henüz hazır değil</string>
+    <string name="open_gallery">Galeri Aç</string>
+    <string name="switch_camera">Kamerayı Değiştir</string>
+    <string name="camera_permission_needed_description">QR kod okuyabilmek için kamera iznine ihtiyacımız var.</string>
+    <string name="grant_permission">İzin Ver</string>
+    <string name="manual_settings">Manuel Ayarlar</string>
+
+    <!-- Splash Screen -->
+    <string name="splash_description">QRitik QR kod ve Barkod tarayıcı</string>
+
+    <!-- Viewmodel / Helper Strings -->
+    <string name="url_cannot_be_opened">URL açılamadı</string>
+    <string name="wifi_connect_clicked">WiFi bağlan butonuna basıldı!</string>
+    <string name="wifi_connect_manual">Ağ: %1$s\nŞifre: %2$s\nLütfen manuel bağlanın.</string>
+    <string name="wifi_redirecting">WiFi ayarlarına yönlendiriliyorsunuz.</string>
+    <string name="wifi_unknown_format">Tanınmayan WiFi formatı:\n%1$s</string>
+    <string name="wifi_settings_failed">WiFi ayarları açılamadı: %1$s</string>
+    <string name="phone_redirecting">Telefon ekranına yönlendiriliyorsunuz.</string>
+    <string name="error_occurred">Hata oluştu.</string>
+
+    <!-- Barcode Informative Cards -->
+    <string name="info_usage">Kullanımı</string>
+    <string name="info_usage_areas">Kullanım Alanları:</string>
+    <string name="info_aztec_text1">Çok veri saklayabilen 2D barkod türüdür, bozulsa bile okunabilir. En az 1 karakter yeterlidir (rakamsal veya metin olabilir).</string>
+    <string name="info_aztec_text2">Genellikle biniş kartlarında ve ulaşım biletlerinde kullanılan 2D barkod türüdür. Küçük alanda çok fazla veri saklayabilir ve bozuk olsa bile okunabilir.</string>
+    <string name="info_code_128_text1">Harf, rakam ve özel karakterleri destekleyen yoğun lineer barkoddur. En az 1 karakter gerekir, uzunluk sınırlaması yoktur.</string>
+    <string name="info_code_128_text2">Harf, rakam ve özel karakterleri destekleyen, yüksek yoğunluklu lineer barkod formatıdır. Genellikle lojistik, depo yönetimi ve kargo takibinde kullanılır.</string>
+    <string name="info_ean_13_text1">Market ürünlerinde kullanılan 12 haneli sayısal barkoddur. Tam 13 hane rakam olmalı, başka karakter kabul etmez..</string>
+    <string name="info_ean_13_text2">Marketlerde ürünlerin kasa okutma sisteminde gördüğünüz 13 haneli sayısal barkoddur. Küresel ticarette standart ürün kimliği sağlar.</string>
+    <string name="info_codabar_text1">Kan bankası ve kütüphane sistemlerinde kullanılan basit barkoddur. En az 2 rakam veya karakter gerekir, genellikle 0–9, A–D harfleri kabul edilir.</string>
+    <string name="info_codabar_text2">Eski ama basit yapılı barkod formatıdır. Kan bankaları, kütüphaneler ve bazı sağlık sistemlerinde tercih edilir.</string>
+    <string name="info_code_39_text1">Harf ve rakamları destekleyen ilk yaygın barkodlardan biridir. En az 1 karakter olmalı, A–Z, 0–9 ve bazı semboller kullanılabilir.</string>
+    <string name="info_code_39_text2">Harfleri ve rakamları destekleyen ilk yaygın barkodlardan biridir. Otomotiv ve savunma sanayinde uzun yıllardır kullanılır.</string>
+    <string name="info_code_93_text1">Code 39’un daha kompakt versiyonudur. En az 1 karakter olmalı, A–Z, 0–9 ve özel karakterleri destekler.</string>
+    <string name="info_code_93_text2">Code 39’un geliştirilmiş, daha yoğun veri saklayabilen versiyonudur. Özellikle posta hizmetlerinde ve kurumsal envanter yönetiminde kullanılır.</string>
+    <string name="info_data_matrix_text1">Küçük alanda çok veri saklayan 2D barkoddur. En az 1 karakter (metin veya rakam) yeterlidir.</string>
+    <string name="info_data_matrix_text2">Çok küçük boyutta büyük veri saklayabilen 2D barkoddur. İlaç kutularında ve elektronik bileşenlerde sıkça kullanılır.</string>
+    <string name="info_ean_8_text1">Küçük ürünlerde kullanılan kısa barkoddur. Tam 8 hane rakam olmalı, başka karakter kabul etmez.</string>
+    <string name="info_ean_8_text2">Küçük paketler için tasarlanmış 8 haneli sayısal barkoddur. Genellikle küçük ürünlerde alan tasarrufu için tercih edilir.</string>
+    <string name="info_itf_text1">Sadece sayısal veri için kullanılan barkoddur. En az 2 rakam olmalı ve rakam sayısı çift haneli olmalıdır (örn. 02, 1234, 567890).</string>
+    <string name="info_itf_text2">Sadece rakamları destekleyen, çift satırlı (interleaved) barkod formatıdır. Karton koli ve lojistik ambalajlamada yaygın şekilde kullanılır.</string>
+    <string name="info_pdf_417_text1">Çok satırlı 2D barkoddur, belgelerde ve kimliklerde kullanılır. En az 1 karakter yeterlidir, binlerce karakter saklayabilir.</string>
+    <string name="info_pdf_417_text2">Çok satırlı 2D barkod türüdür. Kimlik kartları, sürücü belgeleri ve nakliye evraklarında sıkça karşımıza çıkar.</string>
+    <string name="info_upc_a_text1">ABD ve Kanada’da kullanılan 12 haneli barkoddur. Tam 12 hane rakam olmalı, harf kabul etmez.</string>
+    <string name="info_upc_a_text2">ABD ve Kanada’da perakende ürünlerde kullanılan 12 haneli barkoddur. Market raflarındaki çoğu ürün bu formatla etiketlenir.</string>
+    <string name="info_upc_e_text1">UPC-A’nın sıkıştırılmış versiyonudur. Tam 6 hane rakam olmalı, bazı durumlarda sistem 12 haneye genişletir.</string>
+    <string name="open">Aç</string>
+    <string name="copy">Kopyala</string>
+    <string name="wifi">Wi-Fi</string>
+</resources>

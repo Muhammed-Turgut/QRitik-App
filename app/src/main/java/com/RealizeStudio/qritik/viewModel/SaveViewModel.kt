@@ -28,10 +28,10 @@ class SaveViewModel @Inject  constructor( val saveRepository: SaveRepository): V
 
 
 
-    fun save (qrType: String, qrContents: String, date: String, isCreated: Boolean = false){
+    fun save (qrType: String, qrContents: String, date: String, isCreated: Boolean = false, isFavorite: Boolean = false){
         viewModelScope.launch {
             try {
-                saveRepository.save(qrType, qrContents, date, isCreated)
+                saveRepository.save(qrType, qrContents, date, isCreated, isFavorite)
             }catch (e: Exception){
             }
         }
@@ -43,9 +43,25 @@ class SaveViewModel @Inject  constructor( val saveRepository: SaveRepository): V
         }
     }
 
-    fun update(id: Int, qrType: String, qrContents: String, date: String, isCreated: Boolean = false){
+    fun update(id: Int, qrType: String, qrContents: String, date: String, isCreated: Boolean = false, isFavorite: Boolean = false){
         viewModelScope.launch {
-            saveRepository.update(id, qrType, qrContents, date, isCreated)
+            saveRepository.update(id, qrType, qrContents, date, isCreated, isFavorite)
+        }
+    }
+
+    fun toggleFavorite(item: QRsavesItem){
+        viewModelScope.launch {
+            try {
+                saveRepository.update(
+                    id = item.id,
+                    qrType = item.QR_Type ?: "",
+                    qrContents = item.QR_contents ?: "",
+                    date = item.date ?: "",
+                    isCreated = item.isCreated,
+                    isFavorite = !item.isFavorite
+                )
+            } catch (e: Exception) {
+            }
         }
     }
 }

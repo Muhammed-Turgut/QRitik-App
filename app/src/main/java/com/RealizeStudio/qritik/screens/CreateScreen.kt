@@ -1,17 +1,13 @@
 package com.RealizeStudio.qritik.screens
 
-import android.graphics.Bitmap
-import android.widget.Toast
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -20,288 +16,299 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.RealizeStudio.qritik.R
 import com.RealizeStudio.qritik.ui.ads.BannerAdView
-import com.RealizeStudio.qritik.ui.theme.Secondary
-import com.RealizeStudio.qritik.viewModel.SaveViewModel
-import com.RealizeStudio.qritik.viewModel.ScannerResultScreenViewModel
-import com.google.zxing.BarcodeFormat
+
 
 @Composable
-fun CreateScreen(scannerResultScreenViewModel: ScannerResultScreenViewModel = hiltViewModel(),
-                 saveViewModel: SaveViewModel = hiltViewModel(),
-                 navController: NavController){
+fun CreateScreen(
+    navController: NavController
+) {
+    var type by remember { mutableStateOf(true) }
 
-    var text = remember { mutableStateOf("") }
-    var qrBitmap by remember { mutableStateOf<Bitmap?>(null) }
-    val context = LocalContext.current
-    val selectQRType = remember { mutableStateOf(-1) }
-    val selectQRTypeString = remember { mutableStateOf("") }
-    var textBarcod = remember { mutableStateOf("") }
-    var barcodBitmap by remember { mutableStateOf<Bitmap?>(null) }
-
-    when(selectQRType.value){
-        0 ->  selectQRTypeString.value ="KONT_BLG"
-        1 -> selectQRTypeString.value = "Ürün"
-        2 -> selectQRTypeString.value = "URI"
-        3 -> selectQRTypeString.value = "METIN"
-        4 -> selectQRTypeString.value = "WIFI"
-        5 -> selectQRTypeString.value = "E_POSTA"
-        6 -> selectQRTypeString.value = "TELEFON"
-        else -> selectQRTypeString.value =  "BILINMEYEN"
-    }
-
-
-    val selectedIndex = remember { mutableIntStateOf(-1) } // Hiçbiri seçilmemişse -1
-    var type  by  remember { mutableStateOf(true) } // true -> QR Kode, false -> Barcod
-
-    Scaffold(modifier = Modifier.fillMaxSize()){ innerPadding ->
-
-        Column(modifier = Modifier
+    // ✅ Scaffold kaldırıldı, direkt Column
+    Column(
+        modifier = Modifier
             .fillMaxSize()
-            .padding(innerPadding)
-            .background(Color(0xFFF7F7F7)),
-            horizontalAlignment = Alignment.CenterHorizontally) {
+            .background(MaterialTheme.colorScheme.background),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        CreateScreenHeader(
+            isSelected = type,
+            onTabSelected = { type = it }
+        )
 
-            CreateScreenHeader(selected = { boolean->
-                type = boolean
-            })
+        Spacer(modifier = Modifier.height(16.dp))
+        BannerAdView()
+        Spacer(modifier = Modifier.height(12.dp))
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            BannerAdView() //reklam alanı
-            Spacer(modifier = Modifier.height(12.dp))
-
-            if (type == true) {
-
-
-                LazyColumn (modifier = Modifier.fillMaxWidth()){
-
-                    items(qrKodList){item ->
-                        QRKodeListRow(item,navController)
-                        Spacer(modifier = Modifier.height(8.dp))
+        if (type) {
+            val chunkedItems = qrKodList.chunked(2)
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 14.dp)
+            ) {
+                items(chunkedItems) { pair ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 6.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        pair.forEach { item ->
+                            Box(modifier = Modifier.weight(1f)) {
+                                QRKodeGridCell(item, navController)
+                            }
+                        }
+                        if (pair.size == 1) {
+                            Spacer(modifier = Modifier.weight(1f))
+                        }
                     }
-
                 }
             }
-            else {
-
-                LazyColumn (modifier = Modifier.fillMaxWidth()){
-
-                    items(barKodList){item ->
-                        BarKodListRow(item,navController)
-                        Spacer(modifier = Modifier.height(4.dp))
-                    }
-
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                items(barKodList) { item ->
+                    BarKodListRow(item, navController)
                 }
-
             }
         }
     }
-
-
 }
 
 @Composable
-fun CreateScreenHeader(selected: (Boolean) -> Unit) {
-    var isSelected by remember { mutableStateOf(true) }
+fun CreateScreenHeader(isSelected: Boolean, onTabSelected: (Boolean) -> Unit) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.background,
+        border = androidx.compose.foundation.BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f)
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(64.dp)
+                .padding(horizontal = 20.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = stringResource(id = R.string.create_new),
+                fontSize = 20.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+
+            Row(
+                modifier = Modifier
+                    .width(180.dp)
+                    .height(38.dp)
+                    .clip(RoundedCornerShape(19.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
+                    .padding(2.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .clip(RoundedCornerShape(17.dp))
+                        .background(
+                            if (isSelected) {
+                                Brush.linearGradient(
+                                    colors = listOf(
+                                        Color(0xFF9818D6),
+                                        Color(0xFFFF5151)
+                                    )
+                                )
+                            } else {
+                                Brush.linearGradient(
+                                    colors = listOf(Color.Transparent, Color.Transparent)
+                                )
+                            }
+                        )
+                        .clickable { onTabSelected(true) },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "QR",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .clip(RoundedCornerShape(17.dp))
+                        .background(
+                            if (!isSelected) {
+                                Brush.linearGradient(
+                                    colors = listOf(
+                                        MaterialTheme.colorScheme.primary,
+                                        MaterialTheme.colorScheme.secondary
+                                    )
+                                )
+                            } else {
+                                Brush.linearGradient(
+                                    colors = listOf(Color.Transparent, Color.Transparent)
+                                )
+                            }
+                        )
+                        .clickable { onTabSelected(false) },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "BARKOD",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (!isSelected) Color.White else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun QRKodeGridCell(qrKodItem: QRKodItem, navController: NavController) {
+    val isDark = MaterialTheme.colorScheme.background.red < 0.5f
+    val circleBg = if (isDark) Color(0xFF2C2C2C) else Color(0xFFF5F5F5)
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(64.dp)
-            .background(Color(0xFFFF5151))
+            .height(100.dp)
+            .clip(RoundedCornerShape(20.dp))
+            .background(MaterialTheme.colorScheme.surface)
+            .clickable {
+                navController.navigate("CreateResultScreen/${"QR"}/${qrKodItem.name}")
+            }
+            .padding(12.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(CircleShape)
+                    .background(circleBg),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(qrKodItem.image),
+                    contentDescription = null,
+                    tint = Color.Unspecified, // ✅ tint'i tamamen kaldır
+                    modifier = Modifier.size(36.dp)
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = stringResource(id = qrKodItem.nameResId),
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+    }
+}
+
+@Composable
+fun BarKodListRow(item: BarKodItem, navController: NavController) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 5.dp),
+        shape = RoundedCornerShape(14.dp),
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 1.dp,
+        shadowElevation = 1.dp,
+        border = androidx.compose.foundation.BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.04f)
+        )
     ) {
         Row(
             modifier = Modifier
-                .align(Alignment.Center)
                 .fillMaxWidth()
-                .padding(top = 8.dp, bottom = 8.dp),
+                .clickable {
+                    navController.navigate("CreateResultScreen/${"Barcod"}/${item.name}")
+                }
+                .padding(horizontal = 16.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "Yeni Oluştur",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White,
+            Box(
                 modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 16.dp)
+                    .size(34.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.barcod_icon),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Text(
+                text = item.name,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f)
             )
 
-            Column (verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .padding(end = 16.dp)
-                    .clickable(onClick={
-                        if (!isSelected) {
-                            isSelected = true
-                            selected(true)
-                        }
-                    })) {
-
-
-                Icon(painter = painterResource(R.drawable.qr_icon),
-                    contentDescription = null,
-                    tint = if (isSelected) Color.White else Color(0xFFFFFFFF).copy(0.5f))
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Text(text = "QR Kod",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color =if (isSelected) Color.White else Color(0xFFFFFFFF).copy(0.5f))
-            }
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            Column (verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .padding(end = 16.dp)
-                    .clickable(onClick={
-                        if (isSelected) {
-                            isSelected = false
-                            selected(false)
-                        }
-                    })) {
-
-                Icon(painter = painterResource(R.drawable.barcod_icon),
-                    contentDescription = null,
-                    tint = if (isSelected)  Color(0xFFFFFFFF).copy(0.5f) else  Color.White)
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Text(text = "Barcod",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = if (isSelected)  Color(0xFFFFFFFF).copy(0.5f) else  Color.White)
-            }
+            Icon(
+                painter = painterResource(R.drawable.arrow_right_icon),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
+                modifier = Modifier.size(14.dp)
+            )
         }
     }
 }
-
-@Composable
-fun QRKodeListRow(qrKodItem: QRKodItem,
-                  navController: NavController){
-
-    Box(modifier = Modifier
-        .fillMaxWidth()
-        .clickable(onClick = {
-        navController.navigate("CreateResultScreen/${"QR"}/${qrKodItem.name}")
-    })
-        .height(62.dp),
-        contentAlignment = Alignment.Center){
-
-        Row(modifier = Modifier
-            .fillMaxSize()
-            .padding(start = 14.dp, end = 14.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .background(Color.White),
-            verticalAlignment = Alignment.CenterVertically){
-
-            Image(painter = painterResource(qrKodItem.image),
-                contentDescription = null,
-                modifier = Modifier
-                    .padding(start = 12.dp)
-                    .size(42.dp))
-
-            Text(text = qrKodItem.name,
-                fontSize = 16.sp,
-                color = Color(0xFF474747),
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(14.dp))
-
-            Image(painter = painterResource(R.drawable.arrow_right_icon),
-                contentDescription = null,
-                modifier = Modifier
-                    .padding(end = 12.dp)
-                    .size(18.dp))
-
-        }
-    }
-}
-
-@Composable
-fun BarKodListRow(item: BarKodItem,
-                  navController: NavController){
-
-    Box(modifier = Modifier
-        .fillMaxWidth()
-        .height(62.dp)
-        .clickable(onClick = {
-            navController.navigate("CreateResultScreen/${"Barcod"}/${item.name}")
-        }),
-        contentAlignment = Alignment.Center){
-
-        Row (modifier = Modifier
-            .fillMaxSize()
-            .padding(start = 14.dp, end = 14.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .background(Color.White),
-            verticalAlignment = Alignment.CenterVertically){
-
-            Icon(painter = painterResource(R.drawable.barcod_icon),
-                contentDescription = null,
-                tint = Color(0xFF565656),
-                modifier = Modifier
-                    .padding(start = 12.dp)
-                    .size(42.dp))
-
-            Text(text = item.name,
-                fontSize = 16.sp,
-                color = Color(0xFF474747),
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(14.dp))
-
-            Image(painter = painterResource(R.drawable.arrow_right_icon),
-                contentDescription = null,
-                modifier = Modifier
-                    .padding(end = 12.dp)
-                    .size(18.dp))
-
-        }
-
-    }
-}
-
 
 data class BarKodItem(val name: String)
-private val barKodList = listOf<BarKodItem>(
+private val barKodList = listOf(
     BarKodItem("AZTEC"),
     BarKodItem("CODE_128"),
     BarKodItem("EAN_13"),
@@ -313,24 +320,15 @@ private val barKodList = listOf<BarKodItem>(
     BarKodItem("ITF"),
     BarKodItem("PDF_417"),
     BarKodItem("UPC_A"),
-    BarKodItem("UPC_E"))
+    BarKodItem("UPC_E")
+)
 
-
-data class QRKodItem(val name: String, val image:Int)
-private val qrKodList = listOf<QRKodItem>(
-    QRKodItem("Metin",R.drawable.row_txt_icon),
-    QRKodItem("URL",R.drawable.row_url_icon),
-    QRKodItem("Telefon",R.drawable.row_phone_icon),
-    QRKodItem("Wi-Fi",R.drawable.row_wifi_icon),
-    QRKodItem("Email Adresi",R.drawable.row_email_icon),
-    QRKodItem("Kişi",R.drawable.row_user_icon))
-
-
-
-
-
-@Preview(showBackground = true)
-@Composable
-private fun Show(){
-    //QRKodeListRow()
-}
+data class QRKodItem(val name: String, val nameResId: Int, val image: Int)
+private val qrKodList = listOf(
+    QRKodItem("Metin", R.string.type_text, R.drawable.row_txt_icon),
+    QRKodItem("URL", R.string.type_url, R.drawable.row_url_icon),
+    QRKodItem("Telefon", R.string.type_phone, R.drawable.row_phone_icon),
+    QRKodItem("Wi-Fi", R.string.type_wifi, R.drawable.row_wifi_icon),
+    QRKodItem("Email Adresi", R.string.type_email, R.drawable.row_email_icon),
+    QRKodItem("Kişi", R.string.type_contact, R.drawable.row_user_icon)
+)

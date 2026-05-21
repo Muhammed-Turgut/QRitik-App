@@ -4,7 +4,6 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -15,15 +14,16 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.RealizeStudio.qritik.screens.CreateScreen
 import com.RealizeStudio.qritik.screens.MainScreen
+import com.RealizeStudio.qritik.screens.FavoritesScreen
 import com.RealizeStudio.qritik.viewModel.SaveViewModel
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun AppScreen(navControllerNoBottom: NavController,
-              viewModel: SaveViewModel = hiltViewModel()){
-
-
+fun AppScreen(
+    navControllerNoBottom: NavController,
+    viewModel: SaveViewModel = hiltViewModel()
+) {
     val navController = rememberNavController()
 
     Scaffold(
@@ -39,21 +39,18 @@ fun AppScreen(navControllerNoBottom: NavController,
             exitTransition = { fadeOut(animationSpec = tween(150)) },
             modifier = Modifier
                 .padding(innerPadding)
-                .consumeWindowInsets(innerPadding)
-
-        )
-        {
+        ) {
             composable(BottomNavItem.Home.route) {
                 MainScreen(viewModel)
             }
-
             composable(BottomNavItem.Create.route) {
                 CreateScreen(
-                    saveViewModel = viewModel,
                     navController = navControllerNoBottom
                 )
             }
-
+            composable(BottomNavItem.Favorites.route) {
+                FavoritesScreen(viewModel = viewModel)
+            }
         }
     }
 }

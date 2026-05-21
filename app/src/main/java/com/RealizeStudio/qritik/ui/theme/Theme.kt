@@ -9,35 +9,44 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = PrimaryDark,
+    secondary = SecondaryDark,
+    background = BackgroundDark,
+    surface = SurfaceDark,
+    onPrimary = BackgroundDark,
+    onSecondary = BackgroundDark,
+    onBackground = OnBackgroundDark,
+    onSurface = OnSurfaceDark,
+    surfaceVariant = Color(0xFF2C2C2C),
+    onSurfaceVariant = Color(0xFFB0B0B0)
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    primary = PrimaryLight,
+    secondary = SecondaryLight,
+    background = BackgroundLight,
+    surface = SurfaceLight,
+    onPrimary = SurfaceLight,
+    onSecondary = SurfaceLight,
+    onBackground = OnBackgroundLight,
+    onSurface = OnSurfaceLight,
+    surfaceVariant = Color(0xFFFFEEEE),
+    onSurfaceVariant = Color(0xFF4A4A4A)
 )
 
 @Composable
 fun QRitikAppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    // Set dynamicColor to false by default to prioritize our beautiful branded colors
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -48,6 +57,24 @@ fun QRitikAppTheme(
 
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
+    }
+
+    val view = LocalView.current
+    if (!view.isInEditMode) {
+        SideEffect {
+            val activity = view.context as? Activity
+            activity?.window?.let { window ->
+                // Make the status and navigation bars perfectly transparent so they blend with the app background
+                window.statusBarColor = Color.Transparent.toArgb()
+                window.navigationBarColor = Color.Transparent.toArgb()
+                
+                // Set the status bar & navigation bar icons to light or dark depending on the theme
+                WindowCompat.getInsetsController(window, view).apply {
+                    isAppearanceLightStatusBars = !darkTheme
+                    isAppearanceLightNavigationBars = !darkTheme
+                }
+            }
+        }
     }
 
     MaterialTheme(
